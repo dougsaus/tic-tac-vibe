@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Tic Tac Toe</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column; /* Allow form and canvas to stack */
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f0f0f0;
+            font-family: Arial, sans-serif;
+        }
+        canvas {
+            border: 1px solid black;
+        }
+        #setupForm {
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px; /* Space between form and canvas */
+            display: none; /* Initially hidden */
+        }
+        #setupForm h2 {
+            margin-top: 0;
+            text-align: center;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        .form-group input[type=\"text\"],
+        .form-group input[type=\"color\"],
+        .form-group select { /* Added select styling */
+            width: calc(100% - 10px);
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box; /* Ensure padding doesn't increase width */
+        }
+        .form-group .symbol-choice label {
+            margin-right: 10px;
+        }
+        #startGameBtn {
+            width: 100%;
+            padding: 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        #startGameBtn:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div id="setupForm">
+        <h2>Game Setup</h2>
+        <div class="form-group">
+            <label for="player1Name">Player 1 Name:</label>
+            <input type="text" id="player1Name" value="Player 1">
+        </div>
+        <div class="form-group">
+            <label for="player1Symbol">Player 1 Symbol:</label>
+            <select id="player1Symbol">
+                <option value="😀">😀</option>
+                <option value="🚀">🚀</option>
+                <option value="🌟">🌟</option>
+                <option value="❤️">❤️</option>
+                <option value="🎉">🎉</option>
+                <option value="🐱">🐱</option>
+                <option value="🍕">🍕</option>
+                <option value="⚽">⚽</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="player1Color">Player 1 Line Color:</label>
+            <input type="color" id="player1Color" value="#ff0000"> <!-- Default Red -->
+        </div>
+        <hr>
+        <div class="form-group">
+            <label for="player2Name">Player 2 Name:</label>
+            <input type="text" id="player2Name" value="Player 2">
+        </div>
+        <div class="form-group">
+            <label for="player2Symbol">Player 2 Symbol:</label>
+            <select id="player2Symbol">
+                <option value="🚀">🚀</option> <!-- Default different from P1 -->
+                <option value="😀">😀</option>
+                <option value="🌟">🌟</option>
+                <option value="❤️">❤️</option>
+                <option value="🎉">🎉</option>
+                <option value="🐱">🐱</option>
+                <option value="🍕">🍕</option>
+                <option value="⚽">⚽</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="player2Color">Player 2 Line Color:</label>
+            <input type="color" id="player2Color" value="#0000ff"> <!-- Default Blue -->
+        </div>
+        <button id="startGameBtn">Start Game</button>
+    </div>
+
+    <script src="dist/bundle.js"></script>
+</body>
+</html> 
