@@ -101,15 +101,20 @@ class GameScene extends Phaser.Scene {
 
         this.initializeBoard(); 
 
-        this.add.text(this.cameras.main.width / 2, 50, 'Tic Tac Toe', { fontSize: '32px', color: '#000000' }).setOrigin(0.5);
+        this.add.text(this.cameras.main.width / 2, 50, 'Tic Tac Toe', { 
+            fontSize: '32px', 
+            color: '#000000',
+            fontFamily: '"Poppins", sans-serif' // Use Poppins
+        }).setOrigin(0.5);
         this.drawBoard();
 
-        // New Round Button (formerly Restart Game)
-        this.newRoundButton = this.add.text(this.cameras.main.width / 2 - 70, this.cameras.main.height - 70, 'New Round', {
+        // New Round Button
+        this.newRoundButton = this.add.text(this.cameras.main.width / 2 - 80, this.cameras.main.height - 70, 'New Round', {
             fontSize: '20px',
+            fontFamily: '"Poppins", sans-serif',
             color: '#ffffff',
             backgroundColor: '#007bff',
-            padding: { x: 10, y: 5 }
+            padding: { x: 16, y: 10 }
         })
         .setOrigin(0.5)
         .setInteractive()
@@ -117,18 +122,23 @@ class GameScene extends Phaser.Scene {
         this.newRoundButton.on('pointerdown', () => this.startNewRound());
 
         // New Game Button
-        this.newGameButton = this.add.text(this.cameras.main.width / 2 + 70, this.cameras.main.height - 70, 'New Game', {
+        this.newGameButton = this.add.text(this.cameras.main.width / 2 + 80, this.cameras.main.height - 70, 'New Game', {
             fontSize: '20px',
+            fontFamily: '"Poppins", sans-serif',
             color: '#ffffff',
-            backgroundColor: '#28a745', // Green color for New Game
-            padding: { x: 10, y: 5 }
+            backgroundColor: '#28a745',
+            padding: { x: 16, y: 10 }
         })
         .setOrigin(0.5)
         .setInteractive()
         .setVisible(false);
         this.newGameButton.on('pointerdown', () => this.startNewGameSetup());
 
-        const scoreTextStyle = { fontSize: '18px', color: '#333333' };
+        const scoreTextStyle = { 
+            fontSize: '18px', 
+            color: '#333333',
+            fontFamily: '"Poppins", sans-serif'
+        };
         this.player1ScoreText = this.add.text(10, this.cameras.main.height - 30, '', scoreTextStyle).setOrigin(0, 0.5);
         this.player2ScoreText = this.add.text(this.cameras.main.width - 10, this.cameras.main.height - 30, '', scoreTextStyle).setOrigin(1, 0.5);
         this.drawsScoreText = this.add.text(this.cameras.main.width / 2, this.cameras.main.height - 30, '', scoreTextStyle).setOrigin(0.5, 0.5);
@@ -172,10 +182,14 @@ class GameScene extends Phaser.Scene {
         this.lastGameWinner = null;
 
         if (this.statusText) {
-             this.statusText.setText(`${this.activePlayer.name}\'s turn (${this.activePlayer.symbol})`);
+             this.statusText.setText(`${this.activePlayer.name}'s turn (${this.activePlayer.symbol})`);
         } else {
-            this.statusText = this.add.text(this.cameras.main.width / 2, 100, `${this.activePlayer.name}\'s turn (${this.activePlayer.symbol})`, 
-                { fontSize: '24px', color: '#000000' })
+            this.statusText = this.add.text(this.cameras.main.width / 2, 100, `${this.activePlayer.name}'s turn (${this.activePlayer.symbol})`, 
+                { 
+                    fontSize: '28px', // Larger font size
+                    color: '#000000',
+                    fontFamily: '"Poppins", sans-serif' // Use Poppins
+                })
                 .setOrigin(0.5);
         }
 
@@ -189,15 +203,29 @@ class GameScene extends Phaser.Scene {
         const cellSize = boardSize / 3;
         const boardX = (this.cameras.main.width - boardSize) / 2;
         const boardY = (this.cameras.main.height - boardSize) / 2;
+        const cellFillColor = 0xE9ECEF;
+        const cellHoverColor = 0xDCDCDC;
+
         this.cells = [];
         for (let i = 0; i < 3; i++) {
             this.cells[i] = [];
             for (let j = 0; j < 3; j++) {
                 const cellX = boardX + j * cellSize;
                 const cellY = boardY + i * cellSize;
-                const cell = this.add.rectangle(cellX + cellSize / 2, cellY + cellSize / 2, cellSize, cellSize, 0xcccccc)
-                    .setStrokeStyle(2, 0x000000)
+                const cell = this.add.rectangle(cellX + cellSize / 2, cellY + cellSize / 2, cellSize, cellSize, cellFillColor)
+                    .setStrokeStyle(2, 0xADB5BD) // Softer stroke color
                     .setInteractive();
+                
+                cell.on('pointerover', () => {
+                    if (!this.gameOver && this.board[i][j] === null) {
+                        cell.setFillStyle(cellHoverColor);
+                    }
+                });
+
+                cell.on('pointerout', () => {
+                    cell.setFillStyle(cellFillColor);
+                });
+
                 cell.on('pointerdown', () => this.handleCellClick(i, j));
                 this.cells[i][j] = cell;
             }
@@ -276,7 +304,7 @@ class GameScene extends Phaser.Scene {
         }
 
         this.activePlayer = (this.activePlayer === this.player1) ? this.player2 : this.player1;
-        this.statusText.setText(`${this.activePlayer.name}\'s turn (${this.activePlayer.symbol})`);
+        this.statusText.setText(`${this.activePlayer.name}'s turn (${this.activePlayer.symbol})`);
     }
 
     checkWinCondition(lastRow: number, lastCol: number): WinningLineInfo {
@@ -303,19 +331,35 @@ class GameScene extends Phaser.Scene {
 
     drawWinningLine(winningCells: { row: number, col: number }[], color: string) {
         if (winningCells.length < 3) return;
+
         const firstCellPos = this.cells[winningCells[0].row][winningCells[0].col].getCenter();
         const lastCellPos = this.cells[winningCells[2].row][winningCells[2].col].getCenter();
+        
         if (this.winningLineGraphic) {
             this.winningLineGraphic.destroy();
         }
         this.winningLineGraphic = this.add.graphics();
-        const lineColor = parseInt(color.substring(1), 16);
-        this.winningLineGraphic.lineStyle(5, lineColor, 1);
-        this.winningLineGraphic.beginPath();
-        this.winningLineGraphic.moveTo(firstCellPos.x, firstCellPos.y);
-        this.winningLineGraphic.lineTo(lastCellPos.x, lastCellPos.y);
-        this.winningLineGraphic.closePath();
-        this.winningLineGraphic.strokePath();
+        
+        const lineColor = Phaser.Display.Color.ValueToColor(color).color;
+        
+        // Create a line object to tween
+        const line = new Phaser.Geom.Line(firstCellPos.x, firstCellPos.y, firstCellPos.x, firstCellPos.y);
+
+        // Animate the line drawing
+        this.tweens.add({
+            targets: line,
+            x2: lastCellPos.x,
+            y2: lastCellPos.y,
+            duration: 250,
+            ease: 'Power1',
+            onUpdate: () => {
+                if (this.winningLineGraphic) {
+                    this.winningLineGraphic.clear();
+                    this.winningLineGraphic.lineStyle(5, lineColor, 1);
+                    this.winningLineGraphic.strokeLineShape(line);
+                }
+            }
+        });
     }
 
     checkDrawCondition(): boolean {
