@@ -3,16 +3,19 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "webpack serve --open",
     "build": "webpack",
-    "start": "webpack serve --open"
+    "test": "start-server-and-test start http://localhost:8080 'cypress open'",
+    "test:headless": "start-server-and-test start http://localhost:8080 'cypress run'"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "description": "",
   "devDependencies": {
+    "cypress": "^14.4.1",
     "phaser": "^3.90.0",
+    "start-server-and-test": "^2.0.12",
     "ts-loader": "^9.5.2",
     "typescript": "^5.8.3",
     "webpack": "^5.99.9",

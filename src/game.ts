@@ -1,17 +1,18 @@
 import 'phaser';
-import { type GameSetupData, type PlayerConfig } from './SetupScene'; // PlayerConfig.symbol is now string
+import { type PlayerConfig, type GameSetupData } from './SetupScene';
 
 // Sound keys for generic sounds
 const CHEER_SOUND_KEY = 'cheer';
 const BOO_SOUND_KEY = 'boo';
 const DEFAULT_CLICK_SOUND_KEY = 'default_click'; // For fallback if needed
+const SOUND_CLICK = 'click';
 
 interface WinningLineInfo {
     isWin: boolean;
     cells?: { row: number, col: number }[];
 }
 
-class GameScene extends Phaser.Scene {
+export class GameScene extends Phaser.Scene {
     private player1!: PlayerConfig;
     private player2!: PlayerConfig;
     private activePlayer!: PlayerConfig;
@@ -36,8 +37,16 @@ class GameScene extends Phaser.Scene {
     private player2ScoreText!: Phaser.GameObjects.Text;
     private drawsScoreText!: Phaser.GameObjects.Text;
 
+    private drawSound!: Phaser.Sound.BaseSound;
+    private winSound!: Phaser.Sound.BaseSound;
+
     constructor() {
         super('GameScene');
+    }
+
+    private dispatchGameEvent(eventType: string, detail: any = {}) {
+        const event = new CustomEvent(eventType, { detail });
+        window.dispatchEvent(event);
     }
 
     init(data: GameSetupData) {
@@ -95,7 +104,10 @@ class GameScene extends Phaser.Scene {
         console.log(`Attempting to load sound (key: ${DEFAULT_CLICK_SOUND_KEY}): /assets/sounds/default_click.ogg, /assets/sounds/default_click.mp3`);
     }
 
-    create() {
+    create(data: { player1: PlayerConfig, player2: PlayerConfig, startingPlayer: number }) {
+        this.player1 = data.player1;
+        this.player2 = data.player2;
+
         this.sound.unlock(); // Attempt to unlock audio context
         console.log('Audio context unlocked (attempted).');
 
@@ -235,51 +247,46 @@ class GameScene extends Phaser.Scene {
     handleCellClick(row: number, col: number) {
         if (this.gameOver || this.board[row][col] !== null) return;
 
-        this.board[row][col] = this.activePlayer.symbol;
-        // Emojis have their own color, player.color is for the line.
-        // Font size for emojis might need to be larger for visibility.
+        const playerMakingMove = this.activePlayer;
+
+        this.board[row][col] = playerMakingMove.symbol;
         const moveText = this.add.text(
             this.cells[row][col].x, 
             this.cells[row][col].y, 
-            this.activePlayer.symbol, 
-            { fontSize: '64px', /* Increased font size for emojis */ color: '#000000' } // Default black for emoji rendering
+            playerMakingMove.symbol, 
+            { fontSize: '64px', color: '#000000' }
         ).setOrigin(0.5);
         this.moveTextObjects.push(moveText);
 
-        // Play sound using this.sound.play(key) directly
-        if (this.activePlayer.soundKey) {
-            if (this.sound.play(this.activePlayer.soundKey)) {
-                console.log(`Played sound: ${this.activePlayer.soundKey}`);
-            } else {
-                console.warn(`Failed to play sound. Key '${this.activePlayer.soundKey}' for player symbol not found in cache or sound system error.`);
-                // Additional check for debugging
-                if (!this.sound.get(this.activePlayer.soundKey)) {
-                    console.warn(`Follow-up check: this.sound.get('${this.activePlayer.soundKey}') also confirms key is not in cache.`);
-                }
-            }
-        } else {
-            console.warn(`No soundKey defined for player '${this.activePlayer.name}'. No sound played for symbol.`);
+        // Dispatch that a move was made
+        this.dispatchGameEvent('moveMade', {
+            player: playerMakingMove,
+            position: { row, col }
+        });
+
+        // Play sound for the move
+        if (playerMakingMove.soundKey) {
+            this.sound.play(playerMakingMove.soundKey);
         }
 
         const winInfo = this.checkWinCondition(row, col);
         if (winInfo.isWin && winInfo.cells) {
-            this.statusText.setText(`${this.activePlayer.name} wins!`);
+            this.statusText.setText(`${playerMakingMove.name} wins!`);
             this.gameOver = true;
-            this.lastGameWinner = this.activePlayer;
-            if (this.activePlayer === this.player1) this.player1Wins++; else this.player2Wins++;
+            this.lastGameWinner = playerMakingMove;
+            if (playerMakingMove === this.player1) this.player1Wins++; else this.player2Wins++;
             this.updateScoreDisplay();
-            this.drawWinningLine(winInfo.cells, this.activePlayer.color);
+            this.drawWinningLine(winInfo.cells, playerMakingMove.color);
             this.newRoundButton.setVisible(true);
             this.newGameButton.setVisible(true);
             
-            if (this.sound.play(CHEER_SOUND_KEY)) {
-                console.log(`Played sound: ${CHEER_SOUND_KEY}`);
-            } else {
-                console.warn(`Failed to play sound. Key '${CHEER_SOUND_KEY}' not found or sound system error.`);
-                if (!this.sound.get(CHEER_SOUND_KEY)) {
-                    console.warn(`Follow-up check: this.sound.get('${CHEER_SOUND_KEY}') also confirms key is not in cache.`);
-                }
-            }
+            this.sound.play(CHEER_SOUND_KEY);
+            
+            // Dispatch that the game was won
+            this.dispatchGameEvent('gameWin', {
+                winner: playerMakingMove,
+                winningCombination: winInfo.cells
+            });
             return;
         }
 
@@ -291,18 +298,15 @@ class GameScene extends Phaser.Scene {
             this.updateScoreDisplay();
             this.newRoundButton.setVisible(true);
             this.newGameButton.setVisible(true);
+            
+            this.sound.play(BOO_SOUND_KEY);
 
-            if (this.sound.play(BOO_SOUND_KEY)) {
-                console.log(`Played sound: ${BOO_SOUND_KEY}`);
-            } else {
-                console.warn(`Failed to play sound. Key '${BOO_SOUND_KEY}' not found or sound system error.`);
-                if (!this.sound.get(BOO_SOUND_KEY)) {
-                    console.warn(`Follow-up check: this.sound.get('${BOO_SOUND_KEY}') also confirms key is not in cache.`);
-                }
-            }
+            // Dispatch that the game was a draw
+            this.dispatchGameEvent('gameDraw');
             return;
         }
 
+        // If no win or draw, switch player
         this.activePlayer = (this.activePlayer === this.player1) ? this.player2 : this.player1;
         this.statusText.setText(`${this.activePlayer.name}'s turn (${this.activePlayer.symbol})`);
     }
@@ -342,10 +346,8 @@ class GameScene extends Phaser.Scene {
         
         const lineColor = Phaser.Display.Color.ValueToColor(color).color;
         
-        // Create a line object to tween
         const line = new Phaser.Geom.Line(firstCellPos.x, firstCellPos.y, firstCellPos.x, firstCellPos.y);
 
-        // Animate the line drawing
         this.tweens.add({
             targets: line,
             x2: lastCellPos.x,
