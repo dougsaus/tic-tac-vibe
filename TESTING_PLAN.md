@@ -37,7 +37,7 @@ This document outlines a plan for creating a suite of functional tests for the T
 -   **Initial State:**
     -   [X] Test that the canvas is visible after starting the game.
 -   **Core Gameplay:**
-    -   [ ] **Move Event**: Test that clicking an empty cell fires a `moveMade` event containing the player and position.
+    -   [X] **Move Event**: Test that clicking an empty cell fires a `moveMade` event containing the player and position.
 -   **Win Conditions:**
     -   [ ] **Win Event**: Test that a winning sequence of moves fires a `gameWin` event with the winner's data.
 -   **Draw Condition:**

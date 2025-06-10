@@ -39,9 +39,22 @@ export class GameScene extends Phaser.Scene {
 
     private drawSound!: Phaser.Sound.BaseSound;
     private winSound!: Phaser.Sound.BaseSound;
+    public isReady: boolean = false;
 
     constructor() {
         super('GameScene');
+    }
+
+    public getBoardState(): Readonly<(string | null)[][]> {
+        return this.board;
+    }
+
+    public getActivePlayerInfo(): Readonly<PlayerConfig> {
+        return this.activePlayer;
+    }
+
+    public isSceneReady(): boolean {
+        return this.isReady;
     }
 
     private dispatchGameEvent(eventType: string, detail: any = {}) {
@@ -155,6 +168,8 @@ export class GameScene extends Phaser.Scene {
         this.player2ScoreText = this.add.text(this.cameras.main.width - 10, this.cameras.main.height - 30, '', scoreTextStyle).setOrigin(1, 0.5);
         this.drawsScoreText = this.add.text(this.cameras.main.width / 2, this.cameras.main.height - 30, '', scoreTextStyle).setOrigin(0.5, 0.5);
         this.updateScoreDisplay();
+
+        this.isReady = true;
     }
 
     updateScoreDisplay() {
@@ -244,7 +259,7 @@ export class GameScene extends Phaser.Scene {
         }
     }
 
-    handleCellClick(row: number, col: number) {
+    public handleCellClick(row: number, col: number) {
         if (this.gameOver || this.board[row][col] !== null) return;
 
         const playerMakingMove = this.activePlayer;
@@ -270,63 +285,64 @@ export class GameScene extends Phaser.Scene {
         }
 
         const winInfo = this.checkWinCondition(row, col);
-        if (winInfo.isWin && winInfo.cells) {
-            this.statusText.setText(`${playerMakingMove.name} wins!`);
+        if (winInfo.isWin) {
+            this.lastGameWinner = this.activePlayer;
+            this.statusText.setText(`${this.activePlayer.name} wins!`);
+            this.drawWinningLine(winInfo.cells!, this.activePlayer.color);
             this.gameOver = true;
-            this.lastGameWinner = playerMakingMove;
-            if (playerMakingMove === this.player1) this.player1Wins++; else this.player2Wins++;
-            this.updateScoreDisplay();
-            this.drawWinningLine(winInfo.cells, playerMakingMove.color);
             this.newRoundButton.setVisible(true);
             this.newGameButton.setVisible(true);
-            
-            this.sound.play(CHEER_SOUND_KEY);
-            
-            // Dispatch that the game was won
-            this.dispatchGameEvent('gameWin', {
-                winner: playerMakingMove,
-                winningCombination: winInfo.cells
-            });
-            return;
-        }
+            if (this.activePlayer === this.player1) {
+                this.player1Wins++;
+            } else {
+                this.player2Wins++;
+            }
+            this.updateScoreDisplay();
 
-        if (this.checkDrawCondition()) {
-            this.statusText.setText('It\'s a draw!');
+            // Dispatch a win event
+            this.dispatchGameEvent('gameWin', {
+                winner: this.activePlayer,
+                winningLine: winInfo.cells
+            });
+
+            // Play win/boo sounds
+            this.sound.play(CHEER_SOUND_KEY);
+
+        } else if (this.checkDrawCondition()) {
+            this.statusText.setText("It's a draw!");
             this.gameOver = true;
-            this.lastGameWinner = null;
+            this.newRoundButton.setVisible(true);
+            this.newGameButton.setVisible(true);
             this.draws++;
             this.updateScoreDisplay();
-            this.newRoundButton.setVisible(true);
-            this.newGameButton.setVisible(true);
-            
-            this.sound.play(BOO_SOUND_KEY);
+            this.lastGameWinner = null; // No winner in a draw
 
-            // Dispatch that the game was a draw
+            // Dispatch a draw event
             this.dispatchGameEvent('gameDraw');
-            return;
+            // Play boo sound for a draw
+            this.sound.play(BOO_SOUND_KEY);
+        } else {
+            this.activePlayer = (this.activePlayer === this.player1) ? this.player2 : this.player1;
+            this.statusText.setText(`${this.activePlayer.name}'s turn (${this.activePlayer.symbol})`);
         }
-
-        // If no win or draw, switch player
-        this.activePlayer = (this.activePlayer === this.player1) ? this.player2 : this.player1;
-        this.statusText.setText(`${this.activePlayer.name}'s turn (${this.activePlayer.symbol})`);
     }
 
     checkWinCondition(lastRow: number, lastCol: number): WinningLineInfo {
-        const playerSymbol = this.activePlayer.symbol;
+        const symbol = this.board[lastRow][lastCol];
         let winningCells: { row: number, col: number }[] = [];
-        if (this.board[lastRow][0] === playerSymbol && this.board[lastRow][1] === playerSymbol && this.board[lastRow][2] === playerSymbol) {
+        if (this.board[lastRow][0] === symbol && this.board[lastRow][1] === symbol && this.board[lastRow][2] === symbol) {
             winningCells = [{row: lastRow, col: 0}, {row: lastRow, col: 1}, {row: lastRow, col: 2}];
             return { isWin: true, cells: winningCells };
         }
-        if (this.board[0][lastCol] === playerSymbol && this.board[1][lastCol] === playerSymbol && this.board[2][lastCol] === playerSymbol) {
+        if (this.board[0][lastCol] === symbol && this.board[1][lastCol] === symbol && this.board[2][lastCol] === symbol) {
             winningCells = [{row: 0, col: lastCol}, {row: 1, col: lastCol}, {row: 2, col: lastCol}];
             return { isWin: true, cells: winningCells };
         }
-        if (this.board[0][0] === playerSymbol && this.board[1][1] === playerSymbol && this.board[2][2] === playerSymbol) {
+        if (this.board[0][0] === symbol && this.board[1][1] === symbol && this.board[2][2] === symbol) {
             winningCells = [{row: 0, col: 0}, {row: 1, col: 1}, {row: 2, col: 2}];
             return { isWin: true, cells: winningCells };
         }
-        if (this.board[0][2] === playerSymbol && this.board[1][1] === playerSymbol && this.board[2][0] === playerSymbol) {
+        if (this.board[0][2] === symbol && this.board[1][1] === symbol && this.board[2][0] === symbol) {
             winningCells = [{row: 0, col: 2}, {row: 1, col: 1}, {row: 2, col: 0}];
             return { isWin: true, cells: winningCells };
         }
@@ -398,6 +414,13 @@ const config: Phaser.Types.Core.GameConfig = {
     scene: [SetupScene, GameScene]
 };
 
+declare global {
+    interface Window {
+      phaserGame: Phaser.Game;
+    }
+}
+
 window.onload = () => {
     const game = new Phaser.Game(config);
+    window.phaserGame = game;
 }; 

@@ -1,5 +1,13 @@
 /// <reference types="cypress" />
 
+import { GameScene } from '../../src/game';
+
+declare global {
+  interface Window {
+    gameScene: GameScene;
+  }
+}
+
 describe('Tic-Tac-Toe Game', () => {
   beforeEach(() => {
     // Visit the page before each test
@@ -93,6 +101,32 @@ describe('Tic-Tac-Toe Game', () => {
 
     it('should display the initial game state correctly', () => {
       cy.get('#phaser-game-container canvas').should('be.visible');
+    });
+
+    it('should update game state when clicking a cell', () => {
+      cy.window().then((win) => {
+        const game = (win as any).phaserGame;
+        const gameScene = game.scene.getScene('GameScene') as GameScene;
+
+        // Wait until the scene reports that it is ready
+        cy.wrap(gameScene).should('satisfy', (scene: GameScene) => scene.isSceneReady());
+
+        // Now that the scene is ready, proceed with the test
+        cy.then(() => {
+            // 1. Check initial state
+            const initialPlayer = gameScene.getActivePlayerInfo();
+            expect(initialPlayer.name).to.equal('Player X');
+
+            // 2. Directly call the move handler
+            gameScene.handleCellClick(1, 1);
+
+            // 3. Assert the new state
+            const boardState = gameScene.getBoardState();
+            const currentPlayer = gameScene.getActivePlayerInfo();
+            expect(boardState[1][1]).to.equal('❤️');
+            expect(currentPlayer.name).to.equal('Player O');
+        });
+      });
     });
   });
 }); 
