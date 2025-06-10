@@ -91,3 +91,30 @@ This document provides a summary of the development session for the Phaser 3 Tic
 -   **Resolution:**
     -   **Action:** Reverted all changes back to the last known good commit where only the initial, non-event-driven tests were passing.
     -   **Outcome:** The test suite was returned to a stable, 100% passing state. The `TESTING_PLAN.md` was updated to accurately reflect this reverted status. This provides a clean slate for the next session to correctly tackle the event-based testing challenge. 
+
+# Session 3: July 28, 2024 - Robust Canvas Interaction Testing
+
+## 3.1 Goal: Test Core Gameplay Logic
+
+-   **Objective:** Successfully implement a test for the first move in the game, a task that had previously failed due to the complexity of testing a canvas-based application.
+
+## 3.2 Iterative Debugging of Canvas Testing
+
+-   **Challenge:** The primary obstacle was the inability for Cypress to reliably trigger or verify events within the Phaser `<canvas>` element. Standard E2E testing methods proved ineffective.
+-   **Failed Approaches:**
+    1.  **Event Spying (`moveMade`):** An initial attempt to spy on a custom event failed as it was not detected by Cypress.
+    2.  **Reading Canvas Text (`cy.contains`):** This failed because text rendered by Phaser inside the canvas is not part of the DOM and is therefore invisible to Cypress's DOM-based commands.
+    3.  **Simulated Clicks (`cy.click(x, y)`):** Multiple attempts to simulate clicks with both general and precisely calculated coordinates failed to trigger the game's state update, indicating a disconnect between Cypress's synthetic events and Phaser's input system.
+
+## 3.3 Breakthrough: Direct State Manipulation and Verification
+
+-   **Diagnosis:** The root cause was identified as a two-fold race condition:
+    1.  Cypress tests were executing before the Phaser scene was fully initialized and ready for input.
+    2.  Cypress commands were not reliably mapped to Phaser's internal input handling.
+-   **Solution:** A robust testing "API" was created to allow Cypress to directly and reliably interact with the game scene, bypassing the flaky canvas interface.
+    -   **Exposed Game Instance:** The main Phaser game instance was attached to the `window` (`window.phaserGame`) to make it accessible to Cypress.
+    -   **Public Game API:**
+        -   The `handleCellClick` method in `GameScene` was made `public` so it could be called directly from the test.
+        -   Public getter methods (`getBoardState`, `getActivePlayerInfo`) were added to allow the test to read the game's internal state cleanly.
+    -   **Readiness Signal:** An `isReady` flag was added to `GameScene`, set to `true` only at the end of its `create()` method. The Cypress test was modified to wait for this signal (`cy.wrap(gameScene).should('satisfy', scene => scene.isSceneReady())`) before proceeding.
+-   **Outcome:** The test for making a move now passes consistently. This establishes a stable and reliable pattern for all subsequent gameplay-related tests. The `TESTING_PLAN.md` was updated, and the successful changes were committed and pushed. 
