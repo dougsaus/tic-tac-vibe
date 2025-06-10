@@ -39,14 +39,14 @@ This document outlines a plan for creating a suite of functional tests for the T
 -   **Core Gameplay:**
     -   [X] **Move Event**: Test that clicking an empty cell fires a `moveMade` event containing the player and position.
 -   **Win Conditions:**
-    -   [ ] **Win Event**: Test that a winning sequence of moves fires a `gameWin` event with the winner's data.
+    -   [X] **Win Event**: Test that a winning sequence of moves fires a `gameWin` event with the winner's data.
 -   **Draw Condition:**
-    -   [ ] **Draw Event**: Test that a full board with no winner fires a `gameDraw` event.
+    -   [X] **Draw Event**: Test that a full board with no winner fires a `gameDraw` event.
 
 ### 3.3 Additional Tests
 
 -   **New Round Logic:**
-    -   [ ] Test that clicking the "New Round" button clears the board of all symbols.
+    -   [X] Test that clicking the "New Round" button clears the board, preserves scores, and makes the loser of the previous round the new active player.
 -   **New Game Logic:**
-    -   [ ] Test that clicking the "New Game" button returns the user to the setup screen.
-    -   [ ] Test that starting a new game resets all scores to 0. 
+    -   [X] Test that clicking the "New Game" button returns the user to the setup screen.
+    -   [X] Test that starting a new game resets all scores to 0. 

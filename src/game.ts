@@ -57,6 +57,22 @@ export class GameScene extends Phaser.Scene {
         return this.isReady;
     }
 
+    public isGameOver(): boolean {
+        return this.gameOver;
+    }
+
+    public getScores(): { player1: number, player2: number, draws: number } {
+        return {
+            player1: this.player1Wins,
+            player2: this.player2Wins,
+            draws: this.draws
+        };
+    }
+
+    public getWinner(): PlayerConfig | null {
+        return this.lastGameWinner;
+    }
+
     private dispatchGameEvent(eventType: string, detail: any = {}) {
         const event = new CustomEvent(eventType, { detail });
         window.dispatchEvent(event);
@@ -74,6 +90,12 @@ export class GameScene extends Phaser.Scene {
         this.player1Wins = 0;
         this.player2Wins = 0;
         this.draws = 0;
+        this.isReady = false;
+
+        // Reset game objects to ensure they are recreated cleanly on scene restart
+        this.statusText = undefined!;
+        this.newRoundButton = undefined!;
+        this.newGameButton = undefined!;
     }
 
     preload() {
@@ -391,11 +413,11 @@ export class GameScene extends Phaser.Scene {
         return true;
     }
 
-    startNewRound() { // Renamed from restartGame
+    public startNewRound() { // Renamed from restartGame
         this.initializeBoard();
     }
 
-    startNewGameSetup() {
+    public startNewGameSetup() {
         // Scores are reset when SetupScene starts and calls this scene's init() method.
         this.scene.start('SetupScene');
     }

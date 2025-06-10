@@ -73,7 +73,7 @@ describe('Tic-Tac-Toe Game', () => {
   });
 
   context('Game Start', () => {
-    it('should start the a ame with the correct player configurations', () => {
+    it('should start the game with the correct player configurations', () => {
       // Configure players with unique symbols
       cy.findByLabelText(/player 1/i).clear().type('Player X');
       cy.findAllByLabelText(/^symbol$/i).first().select('❤️');
@@ -125,6 +125,229 @@ describe('Tic-Tac-Toe Game', () => {
             const currentPlayer = gameScene.getActivePlayerInfo();
             expect(boardState[1][1]).to.equal('❤️');
             expect(currentPlayer.name).to.equal('Player O');
+        });
+      });
+    });
+
+    it('should correctly handle a win condition', () => {
+      cy.window().then((win) => {
+        const game = (win as any).phaserGame;
+        const gameScene = game.scene.getScene('GameScene') as GameScene;
+
+        // Wait for the scene to be ready before interacting
+        cy.wrap(gameScene).should('satisfy', (scene: GameScene) => scene.isSceneReady());
+
+        cy.then(() => {
+          // Player 1 (X) moves
+          gameScene.handleCellClick(0, 0); // X
+          gameScene.handleCellClick(1, 0); // O
+          gameScene.handleCellClick(0, 1); // X
+          gameScene.handleCellClick(1, 1); // O
+          gameScene.handleCellClick(0, 2); // X (wins)
+
+          // Assert game over state
+          expect(gameScene.isGameOver()).to.be.true;
+
+          // Assert winner by using the new dedicated getter
+          const winner = gameScene.getWinner();
+          expect(winner).to.not.be.null;
+          expect(winner?.name).to.equal('Player X');
+          
+          // Assert score update
+          const scores = gameScene.getScores();
+          expect(scores.player1).to.equal(1);
+          expect(scores.player2).to.equal(0);
+        });
+      });
+    });
+
+    it('should correctly handle a draw condition', () => {
+      cy.window().then((win) => {
+        const game = (win as any).phaserGame;
+        const gameScene = game.scene.getScene('GameScene') as GameScene;
+
+        // Wait for the scene to be ready
+        cy.wrap(gameScene).should('satisfy', (scene: GameScene) => scene.isSceneReady());
+
+        cy.then(() => {
+          // A sequence of moves that results in a draw
+          gameScene.handleCellClick(0, 0); // X
+          gameScene.handleCellClick(1, 1); // O
+          gameScene.handleCellClick(0, 1); // X
+          gameScene.handleCellClick(0, 2); // O
+          gameScene.handleCellClick(2, 0); // X
+          gameScene.handleCellClick(1, 0); // O
+          gameScene.handleCellClick(1, 2); // X
+          gameScene.handleCellClick(2, 1); // O
+          gameScene.handleCellClick(2, 2); // X (Draw)
+
+          // Assert game over state
+          expect(gameScene.isGameOver()).to.be.true;
+
+          // Assert there is no winner
+          expect(gameScene.getWinner()).to.be.null;
+
+          // Assert score update for a draw
+          const scores = gameScene.getScores();
+          expect(scores.draws).to.equal(1);
+          expect(scores.player1).to.equal(0);
+          expect(scores.player2).to.equal(0);
+        });
+      });
+    });
+
+    it('should reset for a new round, making the loser the new active player', () => {
+      cy.window().then((win) => {
+        const game = (win as any).phaserGame;
+        const gameScene = game.scene.getScene('GameScene') as GameScene;
+
+        cy.wrap(gameScene).should('satisfy', (scene: GameScene) => scene.isSceneReady());
+
+        cy.then(() => {
+          // 1. Create a win condition to make the button appear
+          gameScene.handleCellClick(0, 0); // X
+          gameScene.handleCellClick(1, 0); // O
+          gameScene.handleCellClick(0, 1); // X
+          gameScene.handleCellClick(1, 1); // O
+          gameScene.handleCellClick(0, 2); // X (wins)
+
+          // Sanity check that the game is over and score is updated
+          expect(gameScene.isGameOver()).to.be.true;
+          expect(gameScene.getScores().player1).to.equal(1);
+
+          // 2. Start a new round
+          gameScene.startNewRound();
+
+          // 3. Assert the game state is reset
+          expect(gameScene.isGameOver()).to.be.false;
+          
+          // Assert that the loser (Player 2) is now the active player
+          const newActivePlayer = gameScene.getActivePlayerInfo();
+          expect(newActivePlayer.name).to.equal('Player O');
+
+          const boardState = gameScene.getBoardState();
+          // Check that all cells are null (empty)
+          for (let i = 0; i < 3; i++) {
+            for (let j = 0; j < 3; j++) {
+              expect(boardState[i][j]).to.be.null;
+            }
+          }
+
+          // 4. Assert that scores are preserved
+          const scores = gameScene.getScores();
+          expect(scores.player1).to.equal(1);
+          expect(scores.player2).to.equal(0);
+          expect(scores.draws).to.equal(0);
+        });
+      });
+    });
+
+    it('should return to the setup screen for a new game', () => {
+      cy.window().then((win) => {
+        const game = (win as any).phaserGame;
+        const gameScene = game.scene.getScene('GameScene') as GameScene;
+
+        cy.wrap(gameScene).should('satisfy', (scene: GameScene) => scene.isSceneReady());
+
+        cy.then(() => {
+          // 1. Create a win condition to make the button appear
+          gameScene.handleCellClick(0, 0); // X
+          gameScene.handleCellClick(1, 0); // O
+          gameScene.handleCellClick(0, 1); // X
+          gameScene.handleCellClick(1, 1); // O
+          gameScene.handleCellClick(0, 2); // X (wins)
+
+          // 2. Start a new game
+          gameScene.startNewGameSetup();
+
+          // 3. Assert that the UI has reverted to the setup screen
+          cy.get('#setupForm').should('be.visible');
+          cy.findByRole('heading', { name: /game setup/i }).should('be.visible');
+          cy.get('#phaser-game-container canvas').should('not.be.visible');
+        });
+      });
+    });
+
+    it('should reset scores to zero when starting a new game', () => {
+      cy.window().then((win) => {
+        let game = (win as any).phaserGame;
+        let gameScene = game.scene.getScene('GameScene') as GameScene;
+
+        cy.wrap(gameScene).should('satisfy', (scene: GameScene) => scene.isSceneReady());
+
+        cy.then(() => {
+          // 1. Win a game to get a non-zero score
+          gameScene.handleCellClick(0, 0); // X
+          gameScene.handleCellClick(1, 0); // O
+          gameScene.handleCellClick(0, 1); // X
+          gameScene.handleCellClick(1, 1); // O
+          gameScene.handleCellClick(0, 2); // X (wins)
+          expect(gameScene.getScores().player1).to.equal(1);
+
+          // 2. Go back to the setup screen
+          gameScene.startNewGameSetup();
+          cy.get('#setupForm').should('be.visible');
+
+          // 3. Start a new game from the setup screen
+          cy.findByRole('button', { name: /start game/i }).click();
+          cy.get('#phaser-game-container canvas').should('be.visible');
+
+          // 4. Get the new scene and verify the scores are reset
+          game = (win as any).phaserGame;
+          gameScene = game.scene.getScene('GameScene') as GameScene;
+          cy.wrap(gameScene).should('satisfy', (scene: GameScene) => scene.isSceneReady());
+          cy.then(() => {
+            const scores = gameScene.getScores();
+            expect(scores.player1).to.equal(0);
+            expect(scores.player2).to.equal(0);
+            expect(scores.draws).to.equal(0);
+          });
+        });
+      });
+    });
+
+    it('should reset for a new round, making the loser the new active player', () => {
+      cy.window().then((win) => {
+        const game = (win as any).phaserGame;
+        const gameScene = game.scene.getScene('GameScene') as GameScene;
+
+        cy.wrap(gameScene).should('satisfy', (scene: GameScene) => scene.isSceneReady());
+
+        cy.then(() => {
+          // 1. Create a win condition to make the button appear
+          gameScene.handleCellClick(0, 0); // X
+          gameScene.handleCellClick(1, 0); // O
+          gameScene.handleCellClick(0, 1); // X
+          gameScene.handleCellClick(1, 1); // O
+          gameScene.handleCellClick(0, 2); // X (wins)
+
+          // Sanity check that the game is over and score is updated
+          expect(gameScene.isGameOver()).to.be.true;
+          expect(gameScene.getScores().player1).to.equal(1);
+
+          // 2. Start a new round
+          gameScene.startNewRound();
+
+          // 3. Assert the game state is reset
+          expect(gameScene.isGameOver()).to.be.false;
+          
+          // Assert that the loser (Player 2) is now the active player
+          const newActivePlayer = gameScene.getActivePlayerInfo();
+          expect(newActivePlayer.name).to.equal('Player O');
+
+          const boardState = gameScene.getBoardState();
+          // Check that all cells are null (empty)
+          for (let i = 0; i < 3; i++) {
+            for (let j = 0; j < 3; j++) {
+              expect(boardState[i][j]).to.be.null;
+            }
+          }
+
+          // 4. Assert that scores are preserved
+          const scores = gameScene.getScores();
+          expect(scores.player1).to.equal(1);
+          expect(scores.player2).to.equal(0);
+          expect(scores.draws).to.equal(0);
         });
       });
     });
