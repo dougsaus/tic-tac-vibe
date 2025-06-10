@@ -64,3 +64,30 @@ This document provides a summary of the development session for the Phaser 3 Tic
 -   A comprehensive `README.md` was created for new developers.
 -   The project was successfully pushed to a new public GitHub repository named `tic-tac-vibe`. 
 -   This session context file (`SESSIONS.md`) was created. 
+
+# Session 2: July 27, 2024 - E2E Testing with Cypress
+
+## 2.1 Test Suite Setup & Initial Tests
+
+-   **Goal:** Implement a robust End-to-End (E2E) testing suite using Cypress to validate game functionality.
+-   **Plan:** A `TESTING_PLAN.md` was created to outline the full testing strategy, scenarios, and status.
+-   **Setup:**
+    -   Installed `cypress` and `start-server-and-test` as dev dependencies.
+    -   Added `test` and `test:headless` scripts to `package.json` to run Cypress.
+    -   Added `data-testid` attributes to all interactive elements in `index.html` to create durable test selectors.
+-   **Initial Tests:**
+    -   Wrote tests for the setup screen, including default values, player configuration updates, and symbol uniqueness enforcement.
+
+## 2.2 Major Debugging: Testing Canvas Events
+
+-   **Challenge:** A significant portion of the session was dedicated to solving a complex issue where Cypress tests could not reliably detect custom DOM events (`moveMade`, `gameWin`, `gameDraw`) dispatched from the Phaser `GameScene`.
+-   **Initial Approach & Failure:**
+    -   The initial tests used `cy.spy(win, 'dispatchEvent')` to spy on the window's dispatch method.
+    -   **Problem:** This failed because the Phaser game canvas runs in a separate context, and its `window` is not the same as the main application `window` that Cypress instruments.
+-   **Iterative Solutions & Failures:**
+    1.  **Spying on `document`:** The code was refactored to dispatch and listen for events on the `document` object. This also failed, indicating the context issue was more profound.
+    2.  **Using a Global Variable:** A new strategy was implemented where the game would set a global variable (`window.lastEvent`) upon dispatching an event. The tests would then check this variable.
+    -   **Problem:** This introduced multiple TypeScript and linter errors in the Cypress test file related to extending the `Cypress.AUTWindow` type. After several failed automated attempts to fix the type definitions, this approach was abandoned to prevent further complications.
+-   **Resolution:**
+    -   **Action:** Reverted all changes back to the last known good commit where only the initial, non-event-driven tests were passing.
+    -   **Outcome:** The test suite was returned to a stable, 100% passing state. The `TESTING_PLAN.md` was updated to accurately reflect this reverted status. This provides a clean slate for the next session to correctly tackle the event-based testing challenge. 

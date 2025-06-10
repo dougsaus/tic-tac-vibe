@@ -1,15 +1,21 @@
 {
   "compilerOptions": {
     "target": "es5",
+    "lib": [
+      "dom",
+      "es2015"
+    ],
     "module": "commonjs",
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "outDir": "./dist/"
+    "outDir": "./dist/",
+    "types": ["cypress", "@testing-library/cypress"]
   },
   "include": [
-    "src/**/*.ts"
+    "src/**/*.ts",
+    "cypress/**/*.ts"
   ],
   "exclude": [
     "node_modules"
