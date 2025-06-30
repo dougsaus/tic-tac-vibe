@@ -118,3 +118,42 @@ This document provides a summary of the development session for the Phaser 3 Tic
         -   Public getter methods (`getBoardState`, `getActivePlayerInfo`) were added to allow the test to read the game's internal state cleanly.
     -   **Readiness Signal:** An `isReady` flag was added to `GameScene`, set to `true` only at the end of its `create()` method. The Cypress test was modified to wait for this signal (`cy.wrap(gameScene).should('satisfy', scene => scene.isSceneReady())`) before proceeding.
 -   **Outcome:** The test for making a move now passes consistently. This establishes a stable and reliable pattern for all subsequent gameplay-related tests. The `TESTING_PLAN.md` was updated, and the successful changes were committed and pushed. 
+
+# Session 4: June 30, 2025 - Containerization and Build Automation
+
+## 4.1 Initial Dockerization
+
+-   **Goal:** Containerize the application using a `Dockerfile`.
+-   **Implementation:**
+    -   Created a `Dockerfile` for a multi-stage build (Node.js for building, Nginx for serving static assets).
+    -   Created a `.dockerignore` file to exclude unnecessary files from the Docker build context.
+    -   Updated `README.md` with instructions for building and running the Docker container.
+    -   Updated `.gitignore` to exclude IntelliJ IDEA files.
+-   **Debugging:**
+    -   Resolved an issue where Nginx displayed a "Welcome" page instead of the application by ensuring `index.html` and the `assets` directory were correctly copied to the Nginx web root within the `Dockerfile`.
+
+## 4.2 Automated Build and Run Script
+
+-   **Goal:** Automate the process of building the application, Docker image, and running the container.
+-   **Implementation:**
+    -   Created a `build-and-run.sh` script to orchestrate `npm run build`, `docker build`, and `docker run`.
+    -   Implemented robust container cleanup logic within the script (stopping and forcefully removing existing containers) and a wait mechanism to prevent "port already allocated" errors.
+
+## 4.3 Attempted Transition to Cloud Native Buildpacks
+
+-   **Goal:** Convert the containerization process to use Cloud Native Buildpacks for a simplified build.
+-   **Implementation & Debugging:**
+    -   Removed `Dockerfile`, `.dockerignore`, and `build-and-run.sh`.
+    -   Installed `pack` CLI via Homebrew.
+    -   Modified `webpack.config.js` to use `html-webpack-plugin` and `copy-webpack-plugin` to ensure `index.html` and `assets` were correctly placed in the `dist` directory for Buildpack detection.
+    -   Created a `Procfile` (`web: nginx`, then `web: staticfile`) to guide the Buildpacks.
+    -   Attempted `pack build` with various configurations (`--path dist`, `--env BP_WEB_ROOT=dist`, `--env BP_WEB_SERVER=nginx`, explicit buildpack selection, and `--exclude-buildpack` flags).
+    -   Encountered persistent and unresolvable Docker daemon errors (`unable to create manifests file: NotFound: content digest sha256:...: not found`) that prevented successful Buildpack image creation.
+-   **Decision:** Due to the unresolvable underlying Docker daemon issues, the Cloud Native Buildpacks approach was abandoned for this session. The project was reverted to its last working state using the `Dockerfile` approach.
+
+
+
+## 4.5 Git Management
+
+-   **Action:** Staged and committed all changes related to Dockerization and build automation.
+-   **Action:** Pushed the committed changes to the GitHub repository.
