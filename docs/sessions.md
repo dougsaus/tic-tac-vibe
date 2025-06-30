@@ -157,3 +157,74 @@ This document provides a summary of the development session for the Phaser 3 Tic
 
 -   **Action:** Staged and committed all changes related to Dockerization and build automation.
 -   **Action:** Pushed the committed changes to the GitHub repository.
+
+# Session 5: June 30, 2025 - Successful Cloud Native Buildpacks Migration
+
+## 5.1 Goal: Complete Migration to Cloud Native Buildpacks
+
+-   **Objective:** Successfully migrate from Dockerfile-based containerization to Cloud Native Buildpacks, addressing the issues encountered in Session 4.
+-   **Strategy:** Create a comprehensive migration plan before implementation to ensure systematic progress.
+
+## 5.2 Migration Planning and Execution
+
+-   **Planning:**
+    -   Created `buildpack-migration-plan.md` to document all migration tasks, success criteria, and rollback plans.
+    -   Identified key requirements: Node.js build process, NGINX for static file serving, proper asset routing.
+-   **Buildpack Configuration:**
+    -   Selected `paketobuildpacks/builder-jammy-base` as the builder (includes both Node.js and NGINX).
+    -   Created `project.toml` with proper configuration:
+        -   Set `BP_NODE_RUN_SCRIPTS=build` to run webpack during build.
+        -   Configured `BP_WEB_SERVER=nginx` for static file serving.
+        -   Excluded development files to reduce container size.
+    -   Created custom `nginx.conf` to handle routing for `/dist/` and `/assets/` directories with proper caching headers.
+-   **Key Fix:** Resolved Docker daemon issues from Session 4 by disabling containerd storage in Docker Desktop.
+
+## 5.3 Makefile Implementation
+
+-   **Goal:** Replace `build-and-run.sh` with a more organized Makefile.
+-   **Targets Implemented:**
+    -   `make build`: Build container using buildpacks
+    -   `make run`: Run container on port 8080
+    -   `make stop`: Stop and remove container
+    -   `make clean`: Remove container and images
+    -   `make dev`: Run local development server
+    -   `make test`: Run Cypress tests in headless mode
+    -   `make all`: Default target that builds and runs (replaces the shell script workflow)
+-   **Testing:** All Makefile targets tested and verified working correctly.
+
+## 5.4 Validation and Performance Comparison
+
+-   **Functional Testing:**
+    -   Container runs successfully on port 8080
+    -   All assets (JavaScript bundle, sound files) load correctly
+    -   13 Cypress tests pass in headless mode
+-   **Performance Metrics:**
+    -   Dockerfile build time: 21.3 seconds (clean build)
+    -   Buildpack build time: 18.4 seconds (with cache)
+    -   Container size: 167MB (buildpack) vs 60.4MB (Dockerfile)
+    -   Size increase justified by automatic security updates, built-in optimizations, and better debugging capabilities
+
+## 5.5 Documentation Updates
+
+-   **Created:**
+    -   `BUILDPACK_CONFIG.md`: Technical documentation explaining buildpack configuration choices and trade-offs
+-   **Updated:**
+    -   `README.md`: Added Cloud Native Buildpack instructions, updated project structure, added comprehensive troubleshooting section
+    -   `buildpack-migration-plan.md`: Marked all tasks complete with detailed explanations
+-   **Removed:**
+    -   `Dockerfile` and `build-and-run.sh` (preserved in git history)
+
+## 5.6 Key Achievements
+
+-   **Successfully migrated to Cloud Native Buildpacks** after resolving Docker daemon issues
+-   **Improved build automation** with Makefile providing better task organization
+-   **Maintained full functionality** with all tests passing and assets loading correctly
+-   **Enhanced documentation** for future developers and maintenance
+-   **Simplified deployment** process with automatic dependency management and security updates
+
+## 5.7 Lessons Learned
+
+-   Docker Desktop's containerd storage can cause issues with buildpack image creation
+-   Buildpacks require specific NGINX configuration for proper static file serving
+-   The larger container size (2.8x) is an acceptable trade-off for the benefits of automated updates and simplified maintenance
+-   Comprehensive planning (migration plan document) was crucial for systematic progress

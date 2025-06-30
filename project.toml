@@ -1,0 +1,43 @@
+# project.toml - Cloud Native Buildpacks configuration
+[_]
+schema-version = "0.2"
+
+[build]
+# Exclude development and test files
+exclude = [
+  "node_modules",
+  "dist",
+  ".git",
+  ".gitignore",
+  "cypress",
+  "cypress.config.ts",
+  "Dockerfile",
+  "build-and-run.sh",
+  "*.md",
+  "Makefile",
+  ".DS_Store"
+]
+
+[[build.env]]
+name = "BP_NODE_RUN_SCRIPTS"
+value = "build"
+
+[[build.env]]
+name = "BP_WEB_SERVER"
+value = "nginx"
+
+[[build.env]]
+name = "BP_WEB_SERVER_ROOT"
+value = "/workspace"
+
+[[build.env]]
+name = "BP_NGINX_CONF_LOCATION"
+value = "/workspace/nginx.conf"
+
+[io.buildpacks]
+builder = "paketobuildpacks/builder-jammy-base"
+
+# Specify buildpacks to use (optional - builder will auto-detect if not specified)
+# This ensures we use the web-servers buildpack group for Node.js + NGINX
+[[io.buildpacks.group]]
+uri = "paketo-buildpacks/web-servers"
