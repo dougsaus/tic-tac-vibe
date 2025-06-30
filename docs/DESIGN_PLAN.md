@@ -49,4 +49,89 @@ This document outlines a plan to modernize the visual design of the Phaser Tic-T
 - [x] **Winning Line:**
     - [x] Animate the winning line using a Phaser tween.
 
-This plan aims to create a cohesive and modern look and feel, improving the user's overall experience from setup to gameplay. 
+This plan aims to create a cohesive and modern look and feel, improving the user's overall experience from setup to gameplay.
+
+## 4. Future Enhancements
+
+### 4.1 Technology Migration
+- [ ] **React Migration:**
+    - [ ] Convert the application from HTML forms to a full React application
+    - [ ] Keep Phaser for the game board rendering and interaction
+    - [ ] Migrate setup screen and UI controls to React components
+    - [ ] Implement React hooks for state management (player data, game state, scores)
+    - [ ] Add React Router for navigation between setup and game screens
+    - [ ] Create React-Phaser integration layer for communication between React state and Phaser game
+    - [ ] Maintain existing functionality while gaining React's component reusability and state management benefits
+
+### 4.2 CI/CD Pipeline
+- [ ] **GitHub Actions Setup:**
+    - [ ] **Code Quality:**
+        - [ ] Set up ESLint and Prettier for code formatting and linting
+        - [ ] Add TypeScript type checking in CI
+        - [ ] Run Cypress tests on every pull request
+    - [ ] **Security & Dependencies:**
+        - [ ] Implement security vulnerability scanning (e.g., npm audit, Snyk)
+        - [ ] Set up automated dependency update checks (Dependabot)
+        - [ ] Add license compliance checking
+    - [ ] **Build & Deployment:**
+        - [ ] Automated buildpack container builds on push to main
+        - [ ] Deploy to staging environment for testing
+        - [ ] Smoke tests on deployed application
+        - [ ] Deploy to production environment with manual approval (see Section 4.4)
+    - [ ] **Notifications:**
+        - [ ] Set up build status badges in README
+        - [ ] Configure failure notifications
+
+### 4.3 AI Player Feature
+- [ ] **Single Player Mode:**
+    - [ ] Add option in setup screen for "Player vs AI" mode
+    - [ ] **AI Model Selection:**
+        - [ ] Dropdown to choose AI provider (ChatGPT, Gemini, Claude, etc.)
+        - [ ] API integration for each supported AI model
+        - [ ] Secure API key management (environment variables, user input)
+        - [ ] Fallback options if primary AI service is unavailable
+    - [ ] **AI Difficulty Configuration:**
+        - [ ] **Easy:** AI instructed to make random or suboptimal moves
+        - [ ] **Medium:** AI instructed to play reasonably but not perfectly
+        - [ ] **Hard:** AI instructed to play optimally using game theory
+    - [ ] **AI Integration:**
+        - [ ] Send current board state to AI model via API
+        - [ ] Parse AI response for move selection
+        - [ ] Handle AI response errors gracefully
+        - [ ] Implement rate limiting and request timeouts
+    - [ ] **UI Enhancements:**
+        - [ ] Visual indicator when AI is "thinking" (API call in progress)
+        - [ ] Configurable AI move delay for better UX
+        - [ ] AI player customization (name, symbol, model, difficulty)
+        - [ ] Display which AI model is being used during gameplay
+    - [ ] **Testing:**
+        - [ ] Mock AI responses for automated testing
+        - [ ] E2E tests for single player gameplay
+        - [ ] Error handling tests (network failures, API limits)
+        - [ ] Performance testing for AI response times
+
+### 4.4 Cloud Deployment
+- [ ] **Manual/Scripted Deployment:**
+    - [ ] Choose cloud provider (AWS, Google Cloud, Azure, or DigitalOcean)
+    - [ ] Set up container registry for buildpack images
+    - [ ] Create deployment scripts for manual releases
+    - [ ] Configure environment variables and secrets management
+    - [ ] Set up custom domain and SSL certificates
+    - [ ] Implement health checks and monitoring
+- [ ] **Infrastructure as Code:**
+    - [ ] Use Terraform or cloud-specific tools (CloudFormation, etc.)
+    - [ ] Define scalable container deployment (Kubernetes, Cloud Run, etc.)
+    - [ ] Set up load balancing and auto-scaling if needed
+    - [ ] Configure logging and monitoring dashboards
+- [ ] **CI/CD Integration:**
+    - [ ] Add production deployment step to GitHub Actions
+    - [ ] Automatic deployment on successful main branch builds
+    - [ ] Manual approval gate for production releases
+    - [ ] Post-deployment smoke tests on production environment
+    - [ ] Rollback mechanism for failed deployments
+- [ ] **Production Considerations:**
+    - [ ] Environment-specific configuration management
+    - [ ] Database/storage setup if needed for future features
+    - [ ] Backup and disaster recovery planning
+    - [ ] Security scanning of deployed containers
+    - [ ] Cost monitoring and optimization 
