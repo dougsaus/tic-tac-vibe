@@ -1,0 +1,12 @@
+node_modules
+.git
+.idea
+cypress
+Dockerfile
+.dockerignore
+README.md
+DESIGN_PLAN.md
+frontend_testing_guidance.md
+PROJECT_GENESIS.md
+SESSIONS.md
+TESTING_PLAN.md

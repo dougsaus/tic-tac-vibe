@@ -91,6 +91,24 @@ To create a static bundle in the `/dist` directory, you can run the build script
 npm run build
 ```
 
+## Running with Docker
+
+You can also run the application inside a Docker container.
+
+### Prerequisites
+
+*   [Docker](https://www.docker.com/get-started) installed on your machine.
+
+### Building and Running
+
+To build the application, create the Docker image, and run the container, execute the following script:
+
+```bash
+./build-and-run.sh
+```
+
+This script will automatically handle stopping and removing any old containers with the same name. Your application will be available at `http://localhost:8080`.
+
 ## How to Contribute
 
 1.  Pick an unassigned task from the `DESIGN_PLAN.md` or an open issue.
@@ -98,4 +116,4 @@ npm run build
 3.  Make your changes.
 4.  Test your changes thoroughly.
 5.  Commit your changes with a clear and descriptive message.
-6.  Push your branch and open a pull request. 
+6.  Push your branch and open a pull request.
