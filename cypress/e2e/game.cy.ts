@@ -25,6 +25,48 @@ describe('Tic-Tac-Toe Game', () => {
       cy.findByLabelText(/player 2/i).should('have.value', 'Player 2');
     });
 
+    it('should display game mode selector with Player vs Player as default', () => {
+      // Test that game mode selector is visible
+      cy.findByLabelText(/game mode/i).should('be.visible');
+      
+      // Test that default value is Player vs Player
+      cy.findByLabelText(/game mode/i).should('have.value', 'pvp');
+      
+      // Test that Player vs AI option exists
+      cy.findByLabelText(/game mode/i).within(() => {
+        cy.findByRole('option', { name: /player vs ai/i }).should('exist');
+      });
+    });
+
+    it('should update player 2 to AI Player when Player vs AI mode is selected', () => {
+      // Wait for the Phaser game to be loaded
+      cy.window().should('have.property', 'phaserGame');
+      
+      // Wait for the setup form to be visible (SetupScene shows it)
+      cy.get('#setupForm').should('be.visible');
+      
+      // Initially Player 2 name should be editable with default value
+      cy.findByLabelText(/player 2/i).should('have.value', 'Player 2');
+      cy.findByLabelText(/player 2/i).should('not.have.attr', 'readonly');
+      
+      // Select Player vs AI mode
+      cy.findByLabelText(/game mode/i).select('pvai');
+      
+      // Check that the field becomes readonly (this is the main requirement)
+      cy.findByLabelText(/player 2/i).should('have.attr', 'readonly');
+      cy.findByLabelText(/player 2/i).should('have.value', 'AI Player');
+      
+      // Verify the game mode value is correct
+      cy.findByLabelText(/game mode/i).should('have.value', 'pvai');
+      
+      // Switch back to Player vs Player mode
+      cy.findByLabelText(/game mode/i).select('pvp');
+      
+      // Player 2 name should be editable again
+      cy.findByLabelText(/player 2/i).should('not.have.attr', 'readonly');
+      cy.findByLabelText(/player 2/i).should('have.value', 'Player 2');
+    });
+
     it('should allow player configuration to be updated', () => {
       // Test updating player 1's name
       cy.findByLabelText(/player 1/i).clear().type('Alice');

@@ -4,8 +4,13 @@
 IMAGE_NAME := tic-tac-vibe
 BUILDER := paketobuildpacks/builder-jammy-base
 
-# Default target: build and run
-all: build run
+# Default target: build JS, then build container and run
+all: build-js build run
+
+# Build local JavaScript bundle
+build-js:
+	@echo "Building JavaScript bundle..."
+	npm run build
 
 # Build the container using buildpacks
 build:

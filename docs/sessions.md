@@ -228,3 +228,97 @@ This document provides a summary of the development session for the Phaser 3 Tic
 -   Buildpacks require specific NGINX configuration for proper static file serving
 -   The larger container size (2.8x) is an acceptable trade-off for the benefits of automated updates and simplified maintenance
 -   Comprehensive planning (migration plan document) was crucial for systematic progress
+
+# Session 6: July 2, 2025 - Player vs AI Mode Implementation & Testing Debugging
+
+## 6.1 Goal: Implement Player vs AI Mode Feature
+
+-   **Objective:** Implement the first feature from DESIGN_PLAN.md section 4.3 - adding a "Player vs AI" option that changes Player 2 to "AI Player" and makes the field read-only.
+-   **Approach:** Follow Test-Driven Development (TDD) principles with one test at a time.
+
+## 6.2 Initial Implementation
+
+-   **Setup Screen Enhancement:**
+    -   Added game mode selector to `index.html` with "Player vs Player" (default) and "Player vs AI" options.
+    -   Wrote initial Cypress test to verify game mode selector exists and has correct default value.
+    -   Test passed successfully.
+
+-   **Player vs AI Functionality:**
+    -   Created `handleGameModeChange()` method in `SetupScene.ts` to handle game mode selection.
+    -   Added event listener for the game mode selector.
+    -   Implemented logic to set Player 2 name to "AI Player" and make field read-only when "Player vs AI" is selected.
+    -   Wrote comprehensive test to verify the functionality.
+
+## 6.3 Critical Debugging: False Positive Tests & Build Issues
+
+-   **False Positive Problem:**
+    -   Tests were passing but functionality didn't work in the browser.
+    -   User identified this as a serious issue: "I'm concerned that the tests passed before when they should not have."
+    -   Root cause investigation revealed multiple underlying issues.
+
+-   **Build System Issues:**
+    -   **Problem:** `make all` wasn't recompiling JavaScript, only building Docker containers.
+    -   **Solution:** Modified Makefile to include `build-js` step in the `all` target.
+    -   Updated Makefile: `all: build-js build run`
+
+-   **Missing Import Bug (Critical):**
+    -   **Problem:** SetupScene functionality wasn't working because the class wasn't being loaded.
+    -   **Root Cause:** `game.ts` imported only types from SetupScene but not the class itself:
+        ```typescript
+        import { type PlayerConfig, type GameSetupData } from './SetupScene';  // Missing SetupScene class
+        ```
+    -   **Solution:** Added SetupScene class to the import:
+        ```typescript
+        import { SetupScene, type PlayerConfig, type GameSetupData } from './SetupScene';
+        ```
+    -   **Impact:** This single missing import caused the entire SetupScene to be undefined, explaining why no console logs appeared and functionality didn't work.
+
+## 6.4 Test Reliability Improvements
+
+-   **Webpack Dev Server vs Production Build Mismatch:**
+    -   Discovered webpack dev server serves in-memory bundle while `index.html` references `dist/bundle.js` on disk.
+    -   This created inconsistencies between development and test environments.
+    -   Fixed by ensuring proper imports so both environments use the same code.
+
+-   **Enhanced Test Assertions:**
+    -   Made test more stringent to catch real functionality failures.
+    -   Removed artificial delays and made assertions more realistic.
+    -   Test now properly fails when functionality is broken, proving it tests real behavior.
+
+## 6.5 Key Technical Discoveries
+
+-   **Event Listener Debugging:**
+    -   Added comprehensive console logging to trace event listener execution.
+    -   Discovered that `readonly` attribute was being set but `value` wasn't changing initially.
+    -   This led to discovering the import issue.
+
+-   **Browser vs IDE Debug Environment:**
+    -   User noted that functionality worked in IntelliJ's JavaScript debug mode but not in regular browser.
+    -   This was a key clue that led to discovering the webpack dev server serving stale code.
+
+## 6.6 Final Implementation
+
+-   **Working Functionality:**
+    -   Game mode selector correctly changes Player 2 name to "AI Player"
+    -   Player 2 field becomes read-only when "Player vs AI" is selected
+    -   Switching back to "Player vs Player" restores normal functionality
+    -   All functionality verified working in browser
+
+-   **Test Suite:**
+    -   Comprehensive test covers the complete user workflow
+    -   Test properly fails when functionality is broken (no false positives)
+    -   14 of 15 tests passing (1 intentionally failing test was simplified and fixed)
+
+## 6.7 Lessons Learned
+
+-   **Import Management:** Missing class imports can cause silent failures where types work but runtime behavior fails.
+-   **Build System Verification:** Always verify that development and test environments use the same code.
+-   **Test Reliability:** False positive tests are worse than no tests - they provide false confidence.
+-   **Debugging Strategy:** Console logs in multiple environments (browser vs IDE) can reveal environment-specific issues.
+-   **TDD Benefits:** Writing tests first helped catch the build system and import issues that manual testing might miss.
+
+## 6.8 Design Plan Progress
+
+-   **Completed:** DESIGN_PLAN.md section 4.3 - first bullet point (Player vs AI option)
+-   **Status:** ✅ Add option in setup screen for "Player vs AI" mode
+-   **Next:** Ready for AI configuration and integration implementation

@@ -25,6 +25,7 @@ export interface GameSetupData {
 
 export class SetupScene extends Phaser.Scene {
     private setupForm!: HTMLElement;
+    private gameModeSelect!: HTMLSelectElement;
     private player1NameInput!: HTMLInputElement;
     private player1SymbolSelect!: HTMLSelectElement;
     private player1ColorInput!: HTMLInputElement;
@@ -32,6 +33,8 @@ export class SetupScene extends Phaser.Scene {
     private player2SymbolSelect!: HTMLSelectElement;
     private player2ColorInput!: HTMLInputElement;
     private startGameBtn!: HTMLElement;
+    private player2OriginalName: string = 'Player 2';
+
 
     // To store original option texts for reset
     private originalPlayer1OptionTexts: Map<string, string> = new Map();
@@ -43,6 +46,7 @@ export class SetupScene extends Phaser.Scene {
 
     create() {
         this.setupForm = document.getElementById('setupForm')!;
+        this.gameModeSelect = document.getElementById('gameMode') as HTMLSelectElement;
         this.player1NameInput = document.getElementById('player1Name') as HTMLInputElement;
         this.player1SymbolSelect = document.getElementById('player1Symbol') as HTMLSelectElement;
         this.player1ColorInput = document.getElementById('player1Color') as HTMLInputElement;
@@ -50,16 +54,22 @@ export class SetupScene extends Phaser.Scene {
         this.player2SymbolSelect = document.getElementById('player2Symbol') as HTMLSelectElement;
         this.player2ColorInput = document.getElementById('player2Color') as HTMLInputElement;
         this.startGameBtn = document.getElementById('startGameBtn')!;
+        
+        
 
         // Store original option texts
         this.storeOriginalOptionTexts(this.player1SymbolSelect, this.originalPlayer1OptionTexts);
         this.storeOriginalOptionTexts(this.player2SymbolSelect, this.originalPlayer2OptionTexts);
+
+        // Store original Player 2 name
+        this.player2OriginalName = this.player2NameInput.value;
 
         this.setupForm.style.display = 'block';
         if (this.game.canvas) {
             this.game.canvas.style.display = 'none';
         }
 
+        this.gameModeSelect.addEventListener('change', () => this.handleGameModeChange());
         this.player1SymbolSelect.addEventListener('change', () => this.synchronizeSymbolChoices());
         this.player2SymbolSelect.addEventListener('change', () => this.synchronizeSymbolChoices());
         // Color input changes don't need to re-trigger symbol choice sync with this new text-based approach
@@ -69,6 +79,18 @@ export class SetupScene extends Phaser.Scene {
         this.startGameBtn.addEventListener('click', () => this.handleStartGame());
         
         this.synchronizeSymbolChoices();
+    }
+
+    public handleGameModeChange() {
+        const gameMode = this.gameModeSelect.value;
+        
+        if (gameMode === 'pvai') {
+            this.player2NameInput.value = 'AI Player';
+            this.player2NameInput.readOnly = true;
+        } else {
+            this.player2NameInput.readOnly = false;
+            this.player2NameInput.value = "Player 2";
+        }
     }
 
     storeOriginalOptionTexts(selectElement: HTMLSelectElement, map: Map<string, string>) {

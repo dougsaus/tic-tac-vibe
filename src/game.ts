@@ -1,5 +1,5 @@
 import 'phaser';
-import { type PlayerConfig, type GameSetupData } from './SetupScene';
+import { SetupScene, type PlayerConfig, type GameSetupData } from './SetupScene';
 
 // Sound keys for generic sounds
 const CHEER_SOUND_KEY = 'cheer';
@@ -424,8 +424,6 @@ export class GameScene extends Phaser.Scene {
 
     update() {}
 }
-
-import { SetupScene } from './SetupScene';
 
 const config: Phaser.Types.Core.GameConfig = {
     type: Phaser.AUTO,

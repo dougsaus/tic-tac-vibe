@@ -84,7 +84,7 @@ This plan aims to create a cohesive and modern look and feel, improving the user
 
 ### 4.3 AI Player Feature
 - [ ] **Single Player Mode:**
-    - [ ] Add option in setup screen for "Player vs AI" mode
+    - [x] Add option in setup screen for "Player vs AI" mode
     - [ ] **AI Configuration File:**
         - [ ] Create `ai-config.json` for AI settings loaded at startup/runtime
         - [ ] Configure AI provider (ChatGPT, Gemini, Claude, etc.)
