@@ -85,29 +85,42 @@ This plan aims to create a cohesive and modern look and feel, improving the user
 ### 4.3 AI Player Feature
 - [ ] **Single Player Mode:**
     - [ ] Add option in setup screen for "Player vs AI" mode
-    - [ ] **AI Model Selection:**
-        - [ ] Dropdown to choose AI provider (ChatGPT, Gemini, Claude, etc.)
-        - [ ] API integration for each supported AI model
-        - [ ] Secure API key management (environment variables, user input)
-        - [ ] Fallback options if primary AI service is unavailable
-    - [ ] **AI Difficulty Configuration:**
+    - [ ] **AI Configuration File:**
+        - [ ] Create `ai-config.json` for AI settings loaded at startup/runtime
+        - [ ] Configure AI provider (ChatGPT, Gemini, Claude, etc.)
+        - [ ] Set API endpoints and authentication methods
+        - [ ] Define difficulty levels with corresponding prompts
+        - [ ] Configure fallback AI providers and error handling strategies
+        - [ ] Set request timeouts, rate limits, and retry policies
+    - [ ] **AI Configuration Schema:**
         - [ ] **Easy:** AI instructed to make random or suboptimal moves
-        - [ ] **Medium:** AI instructed to play reasonably but not perfectly
+        - [ ] **Medium:** AI instructed to play reasonably but not perfectly  
         - [ ] **Hard:** AI instructed to play optimally using game theory
+        - [ ] Custom prompts and personality settings for each difficulty
+        - [ ] Model-specific parameters (temperature, max tokens, etc.)
     - [ ] **AI Integration:**
+        - [ ] Load AI configuration at application startup
+        - [ ] API integration for each supported AI model
         - [ ] Send current board state to AI model via API
         - [ ] Parse AI response for move selection
-        - [ ] Handle AI response errors gracefully
-        - [ ] Implement rate limiting and request timeouts
+        - [ ] Handle AI response errors gracefully with configured fallbacks
+        - [ ] Implement configurable rate limiting and request timeouts
     - [ ] **UI Enhancements:**
+        - [ ] Simple difficulty selector in setup screen (Easy/Medium/Hard)
         - [ ] Visual indicator when AI is "thinking" (API call in progress)
         - [ ] Configurable AI move delay for better UX
-        - [ ] AI player customization (name, symbol, model, difficulty)
-        - [ ] Display which AI model is being used during gameplay
+        - [ ] Display current difficulty level during gameplay
+        - [ ] Error messages for AI connectivity issues
+    - [ ] **Configuration Management:**
+        - [ ] Environment variable support for API keys
+        - [ ] Configuration validation on startup
+        - [ ] Hot-reload configuration during development
+        - [ ] Documentation for configuration file format
     - [ ] **Testing:**
         - [ ] Mock AI responses for automated testing
+        - [ ] Configuration file validation tests
         - [ ] E2E tests for single player gameplay
-        - [ ] Error handling tests (network failures, API limits)
+        - [ ] Error handling tests (network failures, API limits, invalid config)
         - [ ] Performance testing for AI response times
 
 ### 4.4 Cloud Deployment
