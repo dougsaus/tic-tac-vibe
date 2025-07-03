@@ -16,6 +16,7 @@ export interface PlayerConfig {
     symbol: string;
     color: string;
     soundKey: string;
+    isAI?: boolean;
 }
 
 export interface GameSetupData {
@@ -173,9 +174,11 @@ export class SetupScene extends Phaser.Scene {
             return;
         }
 
+        const isAIMode = this.gameModeSelect.value === 'pvai';
+        
         const gameSetupData: GameSetupData = {
-            player1: { name: player1Name, symbol: player1Symbol, color: player1Color, soundKey: player1SoundKey },
-            player2: { name: player2Name, symbol: player2Symbol, color: player2Color, soundKey: player2SoundKey }
+            player1: { name: player1Name, symbol: player1Symbol, color: player1Color, soundKey: player1SoundKey, isAI: false },
+            player2: { name: player2Name, symbol: player2Symbol, color: player2Color, soundKey: player2SoundKey, isAI: isAIMode }
         };
 
         this.setupForm.style.display = 'none';
