@@ -7,8 +7,13 @@ BUILDER := paketobuildpacks/builder-jammy-base
 # Default target: build JS, then build container and run
 all: build-js build run
 
+# Lint the code
+lint:
+	@echo "Running ESLint..."
+	npm run lint
+
 # Build local JavaScript bundle
-build-js:
+build-js: lint
 	@echo "Building JavaScript bundle..."
 	npm run build
 
@@ -45,4 +50,4 @@ test:
 	@echo "Running tests in headless mode..."
 	npm run test:headless
 
-.PHONY: all build run stop clean dev test
+.PHONY: all build run stop clean dev test lint build-js

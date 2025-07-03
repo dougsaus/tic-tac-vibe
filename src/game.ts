@@ -5,11 +5,17 @@ import { SetupScene, type PlayerConfig, type GameSetupData } from './SetupScene'
 const CHEER_SOUND_KEY = 'cheer';
 const BOO_SOUND_KEY = 'boo';
 const DEFAULT_CLICK_SOUND_KEY = 'default_click'; // For fallback if needed
-const SOUND_CLICK = 'click';
 
 interface WinningLineInfo {
     isWin: boolean;
     cells?: { row: number, col: number }[];
+}
+
+interface GameEventDetail {
+    player?: PlayerConfig;
+    position?: { row: number, col: number };
+    winner?: PlayerConfig;
+    winningLine?: { row: number, col: number }[];
 }
 
 export class GameScene extends Phaser.Scene {
@@ -73,7 +79,7 @@ export class GameScene extends Phaser.Scene {
         return this.lastGameWinner;
     }
 
-    private dispatchGameEvent(eventType: string, detail: any = {}) {
+    private dispatchGameEvent(eventType: string, detail: GameEventDetail = {}) {
         const event = new CustomEvent(eventType, { detail });
         window.dispatchEvent(event);
     }
