@@ -1,6 +1,6 @@
 import 'phaser';
-import { SetupScene, type PlayerConfig, type GameSetupData } from './SetupScene';
-import { AIPlayer } from './services/ai-player';
+import { type PlayerConfig, type GameSetupData } from '../types/game-types';
+import { AIPlayer } from '../services/ai-player';
 
 // Sound keys for generic sounds
 const CHEER_SOUND_KEY = 'cheer';
@@ -497,29 +497,11 @@ export class GameScene extends Phaser.Scene {
     }
 
     public startNewGameSetup() {
-        // Scores are reset when SetupScene starts and calls this scene's init() method.
-        this.scene.start('SetupScene');
+        // Dispatch event to React to handle new game setup
+        window.dispatchEvent(new CustomEvent('newGameRequested'));
     }
 
     update() {}
 }
 
-const config: Phaser.Types.Core.GameConfig = {
-    type: Phaser.AUTO,
-    width: 800,
-    height: 600,
-    backgroundColor: '#ffffff',
-    parent: 'phaser-game-container',
-    scene: [SetupScene, GameScene]
-};
-
-declare global {
-    interface Window {
-      phaserGame: Phaser.Game;
-    }
-}
-
-window.onload = () => {
-    const game = new Phaser.Game(config);
-    window.phaserGame = game;
-}; 
+// Remove the standalone Phaser initialization since React will handle it 

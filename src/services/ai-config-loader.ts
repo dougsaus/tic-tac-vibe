@@ -1,5 +1,14 @@
 import { AIConfig } from '../types/ai-config';
 
+// Extend the global Window interface to include potential API keys
+declare global {
+  interface Window {
+    OPENAI_API_KEY?: string;
+    GEMINI_API_KEY?: string;
+    ANTHROPIC_API_KEY?: string;
+  }
+}
+
 export class AIConfigLoader {
   private static instance: AIConfigLoader;
   private config: AIConfig | null = null;
@@ -118,9 +127,11 @@ export class AIConfigLoader {
     }
 
     // Fallback to environment variables (via window object for browser)
+    // In a browser environment, environment variables might be injected as global properties
     try {
-      const apiKey = (window as any)[providerConfig.apiKeyEnvVar];
-      return typeof apiKey === 'string' ? apiKey : undefined;
+      const envVarName = providerConfig.apiKeyEnvVar as keyof Window;
+      const value = window[envVarName];
+      return typeof value === 'string' ? value : undefined;
     } catch {
       return undefined;
     }

@@ -4,14 +4,17 @@ const unusedImports = require('eslint-plugin-unused-imports');
 
 module.exports = [
   {
-    files: ['src/**/*.ts'],
+    files: ['src/**/*.ts', 'src/**/*.tsx'],
     ignores: ['dist/**', 'node_modules/**', 'webpack.config.js'],
     languageOptions: {
       parser: typescriptParser,
       parserOptions: {
         ecmaVersion: 2020,
         sourceType: 'module',
-        project: './tsconfig.json'
+        project: './tsconfig.json',
+        ecmaFeatures: {
+          jsx: true
+        }
       },
       globals: {
         console: 'readonly',
