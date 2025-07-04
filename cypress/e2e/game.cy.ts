@@ -1,6 +1,6 @@
 /// <reference types="cypress" />
 
-import { GameScene } from '../../src/game';
+import { GameScene } from '../../src/phaser/game';
 
 declare global {
   interface Window {
@@ -16,9 +16,9 @@ describe('Tic-Tac-Toe Game', () => {
 
   context('Setup Screen', () => {
     it('should display the setup form with default values on load', () => {
-      // Test that the setup form is visible and the game container is hidden
+      // Test that the setup form is visible
       cy.findByRole('heading', { name: /game setup/i }).should('be.visible');
-      cy.get('#phaser-game-container').should('not.be.visible');
+      cy.get('.setup-form').should('be.visible');
 
       // Test that player names default to "Player 1" and "Player 2"
       cy.findByLabelText(/player 1/i).should('have.value', 'Player 1');
@@ -39,11 +39,8 @@ describe('Tic-Tac-Toe Game', () => {
     });
 
     it('should update player 2 to AI Player when Player vs AI mode is selected', () => {
-      // Wait for the Phaser game to be loaded
-      cy.window().should('have.property', 'phaserGame');
-      
-      // Wait for the setup form to be visible (SetupScene shows it)
-      cy.get('#setupForm').should('be.visible');
+      // Wait for the setup form to be visible
+      cy.get('.setup-form').should('be.visible');
       
       // Initially Player 2 name should be editable with default value
       cy.findByLabelText(/player 2/i).should('have.value', 'Player 2');
@@ -96,21 +93,25 @@ describe('Tic-Tac-Toe Game', () => {
       cy.findAllByLabelText(/^symbol$/i).first().find('option[value="🍕"]').should('be.disabled');
     });
 
-    it('should show an alert and not start if symbols are the same', () => {
-        cy.window().then(win => {
-            cy.stub(win, 'alert').as('alertStub');
-        });
+    it('should prevent selecting the same symbol for both players', () => {
+        // Select a symbol for player 1
+        cy.findAllByLabelText(/^symbol$/i).first().select('❤️');
         
-        const sharedSymbol = '❤️';
-        cy.findAllByLabelText(/^symbol$/i).first().select(sharedSymbol);
-        cy.findAllByLabelText(/^symbol$/i).eq(1).invoke('val', sharedSymbol);
-
+        // Verify that the same symbol is disabled for player 2
+        cy.findAllByLabelText(/^symbol$/i).eq(1).find('option[value="❤️"]').should('be.disabled');
+        
+        // Verify that player 2's select has automatically changed to a different symbol
+        cy.findAllByLabelText(/^symbol$/i).eq(1).should('not.have.value', '❤️');
+        
+        // Now select a different symbol for player 2
+        cy.findAllByLabelText(/^symbol$/i).eq(1).select('🍕');
+        
+        // Verify that this symbol is now disabled for player 1
+        cy.findAllByLabelText(/^symbol$/i).first().find('option[value="🍕"]').should('be.disabled');
+        
+        // The game should start successfully with different symbols
         cy.findByRole('button', { name: /start game/i }).click();
-        
-        cy.get('@alertStub').should('have.been.calledWith', 'Players cannot choose the same symbol. Please select different symbols.');
-
-        cy.findByRole('heading', { name: /game setup/i }).should('be.visible');
-        cy.get('#phaser-game-container').should('not.be.visible');
+        cy.get('#phaser-game-container').should('be.visible');
     });
   });
 
@@ -303,17 +304,17 @@ describe('Tic-Tac-Toe Game', () => {
           gameScene.startNewGameSetup();
 
           // 3. Assert that the UI has reverted to the setup screen
-          cy.get('#setupForm').should('be.visible');
+          cy.get('.setup-form').should('be.visible');
           cy.findByRole('heading', { name: /game setup/i }).should('be.visible');
-          cy.get('#phaser-game-container canvas').should('not.be.visible');
+          cy.get('#phaser-game-container').should('not.exist');
         });
       });
     });
 
     it('should reset scores to zero when starting a new game', () => {
       cy.window().then((win) => {
-        let game = (win as any).phaserGame;
-        let gameScene = game.scene.getScene('GameScene') as GameScene;
+        const game = (win as any).phaserGame;
+        const gameScene = game.scene.getScene('GameScene') as GameScene;
 
         cy.wrap(gameScene).should('satisfy', (scene: GameScene) => scene.isSceneReady());
 
@@ -328,22 +329,26 @@ describe('Tic-Tac-Toe Game', () => {
 
           // 2. Go back to the setup screen
           gameScene.startNewGameSetup();
-          cy.get('#setupForm').should('be.visible');
+        });
+      });
 
-          // 3. Start a new game from the setup screen
-          cy.findByRole('button', { name: /start game/i }).click();
-          cy.get('#phaser-game-container canvas').should('be.visible');
+      // Wait for React to re-render and show the setup form
+      cy.get('.setup-form').should('be.visible');
 
-          // 4. Get the new scene and verify the scores are reset
-          game = (win as any).phaserGame;
-          gameScene = game.scene.getScene('GameScene') as GameScene;
-          cy.wrap(gameScene).should('satisfy', (scene: GameScene) => scene.isSceneReady());
-          cy.then(() => {
-            const scores = gameScene.getScores();
-            expect(scores.player1).to.equal(0);
-            expect(scores.player2).to.equal(0);
-            expect(scores.draws).to.equal(0);
-          });
+      // 3. Start a new game from the setup screen
+      cy.findByRole('button', { name: /start game/i }).click();
+      cy.get('#phaser-game-container canvas').should('be.visible');
+
+      // 4. Get the new scene and verify the scores are reset
+      cy.window().then((win) => {
+        const game = (win as any).phaserGame;
+        const gameScene = game.scene.getScene('GameScene') as GameScene;
+        cy.wrap(gameScene).should('satisfy', (scene: GameScene) => scene.isSceneReady());
+        cy.then(() => {
+          const scores = gameScene.getScores();
+          expect(scores.player1).to.equal(0);
+          expect(scores.player2).to.equal(0);
+          expect(scores.draws).to.equal(0);
         });
       });
     });

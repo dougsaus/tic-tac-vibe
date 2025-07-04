@@ -15,7 +15,7 @@ This document outlines a plan for creating a suite of functional tests for the T
 
 ## 3. Test Scenarios
 
-### 3.1 Setup Screen (`SetupScene`)
+### 3.1 Setup Screen (React Components)
 
 -   **Default State:**
     -   [X] Test that the setup form is visible and the game canvas is hidden on page load.

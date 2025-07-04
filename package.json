@@ -5,8 +5,8 @@
   "scripts": {
     "start": "webpack serve --open",
     "build": "npm run lint && webpack",
-    "lint": "eslint 'src/**/*.ts'",
-    "lint:fix": "eslint 'src/**/*.ts' --fix",
+    "lint": "eslint 'src/**/*.{ts,tsx}'",
+    "lint:fix": "eslint 'src/**/*.{ts,tsx}' --fix",
     "test": "start-server-and-test start http://localhost:8080 'cypress open'",
     "test:headless": "start-server-and-test start http://localhost:8080 'cypress run'"
   },
@@ -28,5 +28,11 @@
     "webpack": "^5.99.9",
     "webpack-cli": "^6.0.1",
     "webpack-dev-server": "^5.2.2"
+  },
+  "dependencies": {
+    "@types/react": "^19.1.8",
+    "@types/react-dom": "^19.1.6",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0"
   }
 }
