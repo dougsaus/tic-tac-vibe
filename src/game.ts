@@ -1,15 +1,22 @@
 import 'phaser';
-import { type PlayerConfig, type GameSetupData } from './SetupScene';
+import { SetupScene, type PlayerConfig, type GameSetupData } from './SetupScene';
+import { AIPlayer } from './services/ai-player';
 
 // Sound keys for generic sounds
 const CHEER_SOUND_KEY = 'cheer';
 const BOO_SOUND_KEY = 'boo';
 const DEFAULT_CLICK_SOUND_KEY = 'default_click'; // For fallback if needed
-const SOUND_CLICK = 'click';
 
 interface WinningLineInfo {
     isWin: boolean;
     cells?: { row: number, col: number }[];
+}
+
+interface GameEventDetail {
+    player?: PlayerConfig;
+    position?: { row: number, col: number };
+    winner?: PlayerConfig;
+    winningLine?: { row: number, col: number }[];
 }
 
 export class GameScene extends Phaser.Scene {
@@ -40,6 +47,10 @@ export class GameScene extends Phaser.Scene {
     private drawSound!: Phaser.Sound.BaseSound;
     private winSound!: Phaser.Sound.BaseSound;
     public isReady: boolean = false;
+    
+    private aiPlayer: AIPlayer | null = null;
+    private isAIThinking: boolean = false;
+    private aiThinkingText: Phaser.GameObjects.Text | null = null;
 
     constructor() {
         super('GameScene');
@@ -73,7 +84,7 @@ export class GameScene extends Phaser.Scene {
         return this.lastGameWinner;
     }
 
-    private dispatchGameEvent(eventType: string, detail: any = {}) {
+    private dispatchGameEvent(eventType: string, detail: GameEventDetail = {}) {
         const event = new CustomEvent(eventType, { detail });
         window.dispatchEvent(event);
     }
@@ -91,6 +102,13 @@ export class GameScene extends Phaser.Scene {
         this.player2Wins = 0;
         this.draws = 0;
         this.isReady = false;
+        
+        // Initialize AI player if needed
+        if (this.player2.isAI) {
+            this.aiPlayer = new AIPlayer();
+        } else {
+            this.aiPlayer = null;
+        }
 
         // Reset game objects to ensure they are recreated cleanly on scene restart
         this.statusText = undefined!;
@@ -139,12 +157,24 @@ export class GameScene extends Phaser.Scene {
         console.log(`Attempting to load sound (key: ${DEFAULT_CLICK_SOUND_KEY}): /assets/sounds/default_click.ogg, /assets/sounds/default_click.mp3`);
     }
 
-    create(data: { player1: PlayerConfig, player2: PlayerConfig, startingPlayer: number }) {
+    async create(data: { player1: PlayerConfig, player2: PlayerConfig, startingPlayer: number }) {
         this.player1 = data.player1;
         this.player2 = data.player2;
 
         this.sound.unlock(); // Attempt to unlock audio context
         console.log('Audio context unlocked (attempted).');
+
+        // Initialize AI if needed
+        if (this.aiPlayer) {
+            try {
+                await this.aiPlayer.initialize();
+                console.log('AI player initialized');
+            } catch (error) {
+                console.error('Failed to initialize AI player:', error);
+                // Continue without AI
+                this.aiPlayer = null;
+            }
+        }
 
         this.initializeBoard(); 
 
@@ -245,6 +275,11 @@ export class GameScene extends Phaser.Scene {
         if (this.newRoundButton) this.newRoundButton.setVisible(false);
         if (this.newGameButton) this.newGameButton.setVisible(false);
         // Score display updated via updateScoreDisplay() when scores change or on create.
+        
+        // Trigger AI move if AI starts
+        if (this.activePlayer.isAI && this.aiPlayer) {
+            this.makeAIMove();
+        }
     }
 
     drawBoard() {
@@ -282,6 +317,18 @@ export class GameScene extends Phaser.Scene {
     }
 
     public handleCellClick(row: number, col: number) {
+        if (this.gameOver || this.board[row][col] !== null) return;
+        
+        // Prevent clicks during AI turn
+        if (this.isAIThinking) return;
+        
+        // Prevent human clicking for AI player
+        if (this.activePlayer.isAI) return;
+
+        this.makeMove(row, col);
+    }
+
+    private makeMove(row: number, col: number) {
         if (this.gameOver || this.board[row][col] !== null) return;
 
         const playerMakingMove = this.activePlayer;
@@ -346,6 +393,38 @@ export class GameScene extends Phaser.Scene {
         } else {
             this.activePlayer = (this.activePlayer === this.player1) ? this.player2 : this.player1;
             this.statusText.setText(`${this.activePlayer.name}'s turn (${this.activePlayer.symbol})`);
+            
+            // Trigger AI move if it's AI's turn
+            if (this.activePlayer.isAI && this.aiPlayer) {
+                this.makeAIMove();
+            }
+        }
+    }
+
+    private async makeAIMove() {
+        if (!this.aiPlayer || this.gameOver) return;
+        
+        this.isAIThinking = true;
+        
+        // Show AI thinking indicator
+        this.statusText.setText(`${this.activePlayer.name} is thinking...`);
+        
+        try {
+            // Add thinking delay for better UX
+            await this.aiPlayer.simulateThinkingDelay();
+            
+            // Get AI move
+            const aiSymbol = this.activePlayer.symbol;
+            const opponentSymbol = this.activePlayer === this.player1 ? this.player2.symbol : this.player1.symbol;
+            const move = await this.aiPlayer.getMove(this.board, aiSymbol, opponentSymbol);
+            
+            // Make the move
+            this.isAIThinking = false;
+            this.makeMove(move.row, move.col);
+        } catch (error) {
+            console.error('AI move failed:', error);
+            this.isAIThinking = false;
+            this.statusText.setText(`${this.activePlayer.name}'s turn (${this.activePlayer.symbol}) - AI error`);
         }
     }
 
@@ -424,8 +503,6 @@ export class GameScene extends Phaser.Scene {
 
     update() {}
 }
-
-import { SetupScene } from './SetupScene';
 
 const config: Phaser.Types.Core.GameConfig = {
     type: Phaser.AUTO,
