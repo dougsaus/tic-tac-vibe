@@ -32,7 +32,7 @@ value = "/workspace"
 
 [[build.env]]
 name = "BP_NGINX_CONF_LOCATION"
-value = "/workspace/nginx.conf"
+value = "/workspace/deploy/nginx.conf"
 
 [io.buildpacks]
 builder = "paketobuildpacks/builder-jammy-base"
