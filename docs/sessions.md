@@ -443,3 +443,50 @@ This document provides a summary of the development session for the Phaser 3 Tic
 -   **Partial:** React Router for navigation (not needed for current scope)
 -   **Status:** React migration fully complete and verified
 -   **Next:** Ready for further enhancements or AI features
+
+# Session 8: July 5, 2025 - Deploy Directory Refactoring
+
+## 8.1 Goal: Reorganize Project Structure for Better Separation of Concerns
+
+-   **Objective:** Move deployment/infrastructure configuration files from root directory to dedicated `/deploy` directory
+-   **Motivation:** Improve project organization by separating application code from deployment concerns
+
+## 8.2 Implementation
+
+-   **Files Moved:**
+    -   `nginx.conf` → `/deploy/nginx.conf`
+    -   `project.toml` → `/deploy/project.toml`
+    -   `Makefile` kept at root (handles both dev and deploy tasks)
+
+-   **Configuration Updates:**
+    -   Updated `project.toml` to reference new nginx.conf location: `/workspace/deploy/nginx.conf`
+    -   Verified buildpack configuration still works with new paths
+
+-   **Documentation Updates:**
+    -   Updated `README.md` project structure section to reflect new `/deploy` directory
+    -   Clarified that deployment configs are now organized separately
+
+## 8.3 Validation
+
+-   **Build Testing:**
+    -   Confirmed `make build-js` still works correctly
+    -   Verified `make build` (buildpack) successfully builds with new structure
+    -   All webpack compilation and linting processes unaffected
+
+-   **Functional Testing:**
+    -   Buildpack build completed successfully with updated nginx.conf path
+    -   Container deployment workflow maintains full functionality
+    -   All deployment automation remains intact
+
+## 8.4 Benefits Achieved
+
+-   **Improved Organization:** Root directory now cleaner with deployment concerns separated
+-   **Better Maintainability:** Clear separation between application code and infrastructure configuration
+-   **Scalability:** Pattern supports future addition of multiple deployment targets
+-   **Industry Standards:** Follows common practices for larger, more complex projects
+
+## 8.5 Branch Management
+
+-   **Branch Strategy:** Created dedicated `deploy-refactor` branch for this refactoring work
+-   **Clean Separation:** Isolated deployment changes from main development branch
+-   **Ready for Review:** Changes committed and prepared for pull request to main branch

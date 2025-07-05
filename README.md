@@ -42,6 +42,9 @@ The intended audience for this document is a developer new to the project who ne
 ├── /cypress/               # E2E test files and configuration
 │   ├── /e2e/               # Test specifications
 │   └── cypress.config.ts   # Cypress configuration
+├── /deploy/                # Deployment and infrastructure configuration
+│   ├── nginx.conf          # NGINX configuration for buildpack deployment
+│   └── project.toml        # Cloud Native Buildpack configuration
 ├── /dist/                  # Compiled output bundle (not in git)
 ├── /node_modules/          # Project dependencies (not in git)
 ├── /src/
@@ -68,10 +71,8 @@ The intended audience for this document is a developer new to the project who ne
 │   └── frontend_testing_guidance.md # Testing guidance for AI assistants
 ├── index.html              # The main HTML entry point for React app
 ├── Makefile                # Build automation with buildpack support
-├── nginx.conf              # NGINX configuration for buildpack deployment
 ├── package.json            # Project dependencies and scripts
 ├── package-lock.json       # Exact dependency versions
-├── project.toml            # Cloud Native Buildpack configuration
 ├── tsconfig.json           # TypeScript compiler configuration
 └── webpack.config.js       # Webpack bundler configuration
 ```
