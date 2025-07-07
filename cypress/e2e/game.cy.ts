@@ -1,4 +1,5 @@
 /// <reference types="cypress" />
+/// <reference types="@types/chai" />
 
 import { GameScene } from '../../src/phaser/game';
 

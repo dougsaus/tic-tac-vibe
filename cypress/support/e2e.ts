@@ -17,5 +17,8 @@
 import './commands'
 import '@testing-library/cypress/add-commands'
 
+// Import our Chai-based expect to override any Jest types
+import './assertions'
+
 // Alternatively, you can use CommonJS syntax:
 // require('./commands')

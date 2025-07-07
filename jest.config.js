@@ -6,6 +6,10 @@ module.exports = {
     '<rootDir>/src/**/__tests__/**/*.(ts|tsx|js)',
     '<rootDir>/src/**/*.(test|spec).(ts|tsx|js)',
   ],
+  testPathIgnorePatterns: [
+    '/node_modules/',
+    '/cypress/'
+  ],
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json'],
   collectCoverageFrom: [
     'src/**/*.{ts,tsx}',
@@ -14,9 +18,7 @@ module.exports = {
   ],
   transform: {
     '^.+\\.(ts|tsx)$': ['ts-jest', {
-      tsconfig: {
-        jsx: 'react',
-      },
+      tsconfig: 'tsconfig.test.json',
     }],
   },
 };

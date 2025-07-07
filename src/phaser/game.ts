@@ -48,7 +48,7 @@ export class GameScene extends Phaser.Scene {
     private winSound!: Phaser.Sound.BaseSound;
     public isReady: boolean = false;
     
-    private aiPlayer: AIPlayer | null = null;
+    public aiPlayer: AIPlayer | null = null;
     private isAIThinking: boolean = false;
     private aiThinkingText: Phaser.GameObjects.Text | null = null;
 
@@ -106,6 +106,9 @@ export class GameScene extends Phaser.Scene {
         // Initialize AI player if needed
         if (this.player2.isAI) {
             this.aiPlayer = new AIPlayer();
+            if (this.player2.aiDifficulty) {
+                this.aiPlayer.setDifficulty(this.player2.aiDifficulty);
+            }
         } else {
             this.aiPlayer = null;
         }

@@ -185,4 +185,12 @@ What is your next move? Play as optimally as possible.`;
     const delay = Math.random() * (config.moveDelay.max - config.moveDelay.min) + config.moveDelay.min;
     await new Promise(resolve => setTimeout(resolve, delay));
   }
+
+  public setDifficulty(difficulty: DifficultyLevel): void {
+    this.difficulty = difficulty;
+  }
+
+  public getDifficulty(): DifficultyLevel {
+    return this.difficulty;
+  }
 }
