@@ -9,12 +9,15 @@ export const EMOJI_SOUND_KEY_MAP: Record<string, string> = {
     '⚽': 'kick_ball'
 };
 
+export type AIDifficulty = 'easy' | 'medium' | 'hard';
+
 export interface PlayerConfig {
     name: string;
     symbol: string;
     color: string;
     soundKey: string;
     isAI?: boolean;
+    aiDifficulty?: AIDifficulty;
 }
 
 export interface GameSetupData {

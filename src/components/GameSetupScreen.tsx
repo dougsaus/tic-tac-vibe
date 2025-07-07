@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { EMOJI_SOUND_KEY_MAP, GameSetupData } from '../types/game-types';
+import { EMOJI_SOUND_KEY_MAP, GameSetupData, AIDifficulty } from '../types/game-types';
 
 interface GameSetupScreenProps {
   onStartGame: (data: GameSetupData) => void;
@@ -7,6 +7,7 @@ interface GameSetupScreenProps {
 
 export const GameSetupScreen: React.FC<GameSetupScreenProps> = ({ onStartGame }) => {
   const [gameMode, setGameMode] = useState('pvp');
+  const [aiDifficulty, setAiDifficulty] = useState<AIDifficulty>('medium');
   const [player1Name, setPlayer1Name] = useState('Player 1');
   const [player1Symbol, setPlayer1Symbol] = useState('😀');
   const [player1Color, setPlayer1Color] = useState('#DC3545');
@@ -48,7 +49,8 @@ export const GameSetupScreen: React.FC<GameSetupScreenProps> = ({ onStartGame })
         symbol: player2Symbol, 
         color: player2Color, 
         soundKey: EMOJI_SOUND_KEY_MAP[player2Symbol] || 'default_click',
-        isAI: gameMode === 'pvai' 
+        isAI: gameMode === 'pvai',
+        ...(gameMode === 'pvai' && { aiDifficulty })
       }
     };
 
@@ -91,6 +93,18 @@ export const GameSetupScreen: React.FC<GameSetupScreenProps> = ({ onStartGame })
         >
           <option value="pvp">Player vs Player</option>
           <option value="pvai">Player vs AI</option>
+        </select>
+      </div>
+      <div className="form-group" style={{ display: gameMode === 'pvai' ? 'block' : 'none' }}>
+        <label htmlFor="aiDifficulty">AI Difficulty</label>
+        <select
+          id="aiDifficulty"
+          value={aiDifficulty}
+          onChange={(e) => setAiDifficulty(e.target.value as AIDifficulty)}
+        >
+          <option value="easy">Easy</option>
+          <option value="medium">Medium</option>
+          <option value="hard">Hard</option>
         </select>
       </div>
       <div className="player-inputs">

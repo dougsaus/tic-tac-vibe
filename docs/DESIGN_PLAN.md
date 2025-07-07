@@ -107,6 +107,11 @@ This plan aims to create a cohesive and modern look and feel, improving the user
         - [ ] Implement configurable rate limiting and request timeouts
     - [ ] **UI Enhancements:**
         - [ ] Simple difficulty selector in setup screen (Easy/Medium/Hard)
+            - [ ] Add difficulty level selector component when "Player vs AI" mode is selected
+            - [ ] Implement three difficulty levels: Easy, Medium, Hard
+            - [ ] Store selected difficulty in game setup data
+            - [ ] Pass difficulty level to AI configuration system
+            - [ ] Test difficulty selector with React Testing Library
         - [x] Visual indicator when AI is "thinking" (API call in progress)
         - [ ] Configurable AI move delay for better UX
         - [ ] Display current difficulty level during gameplay
